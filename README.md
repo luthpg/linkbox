@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# linkbox
 
-## Getting Started
+## 1. 概要
 
-First, run the development server:
+本アプリケーションは、ユーザーがWebサイトのブックマークを管理するためのWebアプリケーションです。
+GUIからのCRUD操作に加え、API経由でのブックマーク登録をサポートします。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 2. 主要機能
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2.1. ブックマーク管理機能
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+ユーザーは以下の操作を行うことができます。
+- ブックマーク登録: GUIまたはAPI経由で新しいブックマークを登録します。
+- ブックマーク閲覧: 登録済みのブックマーク一覧を表示します。OGP情報も活用してリッチな表示を行います。
+- ブックマーク更新: 登録済みのブックマークの情報を変更します。
+- ブックマーク削除: 登録済みのブックマークを削除します。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2.2. 認証機能
 
-## Learn More
+- ユーザーはConvexの組み込みGoogle認証を使用してログイン認証を行います。
+- ブックマークはユーザーごとにプライベートに管理され、他のユーザーからは参照できません。
 
-To learn more about Next.js, take a look at the following resources:
+### 2.3. APIキー管理機能
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- ユーザーはAPIキーを生成し、不要になったAPIキーを削除できます。
+- 生成されたAPIキーはSHA-256でハッシュ化されて保存されます。
+- 生成されたAPIキーは、API経由でのブックマーク登録時にBearerトークンとして使用されます。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2.4. OGP情報取得機能
+- 登録されたURLからOGP (Open Graph Protocol) 情報を取得し、ブックマーク一覧や詳細画面で表示します。
+- OGP情報がない場合は、既存のブックマーク情報でフォールバック表示を行います。
 
-## Deploy on Vercel
+## 3. データ項目
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+各ブックマークは以下の情報を持ちます。
+- URL: ブックマークの対象となるWebサイトのURL (必須)
+- タイトル: ブックマークのタイトル (必須)
+- メモ: ブックマークに関する自由記述のメモ (任意)
+- タグ: ブックマークに関連するタグ。複数設定可能 (任意)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 4. 技術スタック
+- フロントエンド: React, Next.js (App Router)
+- UIコンポーネント: shadcn/ui
+- データベース/バックエンド/認証: Convex (Convex Google認証)
+- キャッシュ: SWR
+- 言語: TypeScript
+- バリデーション: Zod, React Hook Form
+- エラーロギング: Sentry
+- トースト通知: Sonner
+- 単体テスト: Vitest (jsdom, ブラウザモード含む)
+- スタイリング: シンプル、Googleライク
+
+## 5. UI/UX要件
+
+### 5.1. GUI操作
+
+- 認証画面: Google認証ボタンのみを表示し、Googleアカウントでのログイン/サインアップを促します。
+- ブックマーク登録/編集フォーム: URLとタイトルは必須入力項目とし、メモとタグは任意入力項目とします。Zodによる厳格なバリデーションとリアルタイムなフィードバックを提供します。
+- ブックマーク一覧: 登録されたブックマークをOGP情報（タイトル、説明、画像）を活用したカード形式で一覧表示します。各ブックマークの編集・削除ボタンが隣接します。ロード時にはスケルトンローダーを表示します。
+- ブックマーク詳細/編集: 個別のブックマークのOGP情報と、その編集フォームを表示します。ロード時にはスケルトンローダーを表示します。
+- APIキー管理画面: ユーザーはAPIキーの生成と削除を行うための専用画面にアクセスできます。生成されたAPIキーの一覧（マスクされたキー、名前、生成日時など）が表示されます。ロード時にはスケルトンローダーを表示します。
+- レスポンシブデザイン: スマートフォン、タブレット、デスクトップなど、様々なデバイスで最適に表示・操作できるレスポンシブデザインとします。
+- ロード状態のフィードバック: データフェッチ中やフォーム送信中には、スケルトンローダーやボタン内のスピナーなど、明確な視覚的フィードバックを提供します。
+- エラー通知: Sonnerによるユーザーフレンドリーなトースト通知で、操作の成功・失敗やエラーを伝えます。
+
+## 6. API要件
+
+### 6.1. ブックマーク登録API
+- エンドポイント: `POST /api/bookmarks` (Next.jsのAPIルートを経由してConvex HTTPアクションを呼び出す)
+- 認証: BearerトークンによるAPIキー認証を必須とします。提供されたAPIキーはSHA-256でハッシュ化されて検証されます。
+- リクエストボディ: Zodスキーマ `BookmarkFormSchema` に基づく厳格なバリデーションを行います。
+  ```json
+  {
+    "url": "https://example.com/some-page",
+    "title": "Example Page Title",
+    "memo": "これはメモです",
+    "tags": ["技術", "参考"]
+  }
+  ```
+  - `url`: `string` (必須)
+  - `title`: `string` (必須)
+  - `memo`: `string` (任意)
+  - `tags`: `string[]` (任意)
+
+- レスポンス:
+  - 成功時: 201 Created と登録されたブックマークの情報
+  - 失敗時: 400 Bad Request (バリデーションエラーなど)、401 Unauthorized (認証失敗)
+
+### 6.2. APIキー管理API (Convexミューテーション/クエリ)
+これらの操作は、Convexのミューテーション/クエリを直接フロントエンドから呼び出すことで実現されます。
+Next.jsのAPIルートは必要ありません。
+
+#### 6.2.1. APIキー一覧取得クエリ
+- Convex関数: `api.apiKeys.getApiKeys` (query)
+- 認証: Convexの組み込み認証により、認証済みのユーザーのみが自分のAPIキー一覧を取得できます。
+
+#### 6.2.2. APIキー生成ミューテーション
+- Convex関数: `api.apiKeys.generateApiKey` (mutation)
+- 認証: Convexの組み込み認証により、認証済みのユーザーのみが新しいAPIキーを生成できます。
+- APIキーの保存: 生成されたAPIキーは`SHA-256`でハッシュ化されてデータベースに保存されます。生のキーは生成時に一度だけクライアントに返されます。
+
+#### 6.2.3. APIキー削除ミューテーション
+- Convex関数: `api.apiKeys.deleteApiKey` (mutation)
+- 認証: Convexの組み込み認証により、認証済みのユーザーが自分のAPIキーのみを削除できます。
+
+### 6.3. OGP情報取得API (Next.js APIルート)
+- エンドポイント: `GET /api/ogp?url={targetUrl}`
+- 機能: 指定された targetUrl のHTMLコンテンツをフェッチし、OGPメタタグを解析してOGP情報を返します。
+- セキュリティ: 外部URLフェッチに対するタイムアウト設定、エラーハンドリングを行います。
+
+## 7. その他
+- エラーロギング: Sentryを導入し、クライアントサイドおよびサーバーサイドで発生したエラーを監視します。
+- エラーバウンダリ: UIコンポーネントツリー内のエラーをキャッチし、ユーザーにフォールバックUIを表示してアプリケーション全体のクラッシュを防ぎます。
+- 単体テスト: VitestとTesting Libraryを導入し、ユーティリティ関数やReactコンポーネントの動作を検証します。
