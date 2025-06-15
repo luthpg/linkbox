@@ -1,16 +1,24 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Bookmark, BookmarkFormSchema, BookmarkFormData } from '@/types/bookmark'; // Zodスキーマと型をインポート
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import {
+  type Bookmark,
+  type BookmarkFormData,
+  BookmarkFormSchema,
+} from '@/types/bookmark'; // Zodスキーマと型をインポート
 import { XIcon } from 'lucide-react';
+import { useEffect } from 'react';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
@@ -19,6 +27,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
 interface BookmarkFormProps {
   initialData?: Bookmark; // 編集時にフォームに初期設定するBookmarkオブジェクト (オプション)
@@ -35,7 +45,12 @@ interface BookmarkFormProps {
  * @param onCancel キャンセル時に呼び出されるコールバック
  * @param isLoading フォームの送信状態
  */
-export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: BookmarkFormProps) {
+export function BookmarkForm({
+  initialData,
+  onSubmit,
+  onCancel,
+  isLoading,
+}: BookmarkFormProps) {
   // useFormフックを初期化し、Zodスキーマをリゾルバとして設定します。
   // defaultValuesはフォームが初めてレンダリングされる際の初期値を定義します。
   const form = useForm<BookmarkFormData>({
@@ -72,7 +87,10 @@ export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: Boo
    * @param e キーボードイベント
    * @param field React Hook Formのフィールドオブジェクト
    */
-  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: any) => {
+  const handleTagInputKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    field: any,
+  ) => {
     // Enterキーが押され、かつ入力値が空白でない場合
     if (e.key === 'Enter' && e.currentTarget.value.trim() !== '') {
       e.preventDefault(); // Enterキーによるフォーム全体の送信を防止
@@ -100,9 +118,13 @@ export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: Boo
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl">{initialData ? 'ブックマークを編集' : '新しいブックマークを追加'}</CardTitle>
+        <CardTitle className="text-2xl">
+          {initialData ? 'ブックマークを編集' : '新しいブックマークを追加'}
+        </CardTitle>
         <CardDescription>
-          {initialData ? 'ブックマークの情報を更新してください。' : '新しいウェブサイトのブックマークを追加してください。'}
+          {initialData
+            ? 'ブックマークの情報を更新してください。'
+            : '新しいウェブサイトのブックマークを追加してください。'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -113,11 +135,19 @@ export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: Boo
             <FormField
               control={form.control} // フォームの制御オブジェクト
               name="url" // フィールド名
-              render={({ field }) => ( // フィールドのレンダリング関数
+              render={(
+                { field }, // フィールドのレンダリング関数
+              ) => (
                 <FormItem>
-                  <FormLabel>URL <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    URL <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com" {...field} className="w-full" />
+                    <Input
+                      placeholder="https://example.com"
+                      {...field}
+                      className="w-full"
+                    />
                   </FormControl>
                   <FormMessage /> {/* バリデーションエラーメッセージを表示 */}
                 </FormItem>
@@ -130,9 +160,15 @@ export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: Boo
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>タイトル <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    タイトル <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="ウェブサイトのタイトル" {...field} className="w-full" />
+                    <Input
+                      placeholder="ウェブサイトのタイトル"
+                      {...field}
+                      className="w-full"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,21 +206,26 @@ export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: Boo
                   <FormControl>
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* 現在のタグリストを表示し、削除ボタンを各タグに付ける */}
-                      {field.value && field.value.map((tag: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1 pr-1">
-                          {tag}
-                          <Button
-                            type="button" // フォーム送信を防ぐ
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
-                            onClick={() => removeTag(tag, field)} // タグ削除ハンドラを呼び出し
-                            aria-label={`Remove tag ${tag}`}
+                      {field.value &&
+                        field.value.map((tag: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="flex items-center gap-1 pr-1"
                           >
-                            <XIcon className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ))}
+                            {tag}
+                            <Button
+                              type="button" // フォーム送信を防ぐ
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
+                              onClick={() => removeTag(tag, field)} // タグ削除ハンドラを呼び出し
+                              aria-label={`Remove tag ${tag}`}
+                            >
+                              <XIcon className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
                       {/* 新しいタグを入力するためのインプットフィールド */}
                       <Input
                         type="text"
@@ -201,15 +242,22 @@ export function BookmarkForm({ initialData, onSubmit, onCancel, isLoading }: Boo
 
             {/* フォーム全体のエラーメッセージ（例: サーバーサイドバリデーションエラーなど） */}
             {form.formState.errors.root?.message && (
-              <p className="text-red-500 text-sm">{form.formState.errors.root.message}</p>
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.root.message}
+              </p>
             )}
 
             <div className="flex justify-end gap-2 mt-4">
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isLoading}
+              >
                 キャンセル
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? '保存中...' : (initialData ? '更新' : '保存')}
+                {isLoading ? '保存中...' : initialData ? '更新' : '保存'}
               </Button>
             </div>
           </form>

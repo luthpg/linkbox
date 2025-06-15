@@ -1,21 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { BookmarkForm } from '@/components/custom/BookmarkForm';
-import type { BookmarkFormData } from '@/types/bookmark';
-import { OGPData } from '@/types/ogp';
-import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ExternalLinkIcon } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
+import type { Id } from '@/convex/_generated/dataModel';
+import type { BookmarkFormData } from '@/types/bookmark';
+import type { OGPData } from '@/types/ogp';
+import { useMutation, useQuery } from 'convex/react';
+import { ExternalLinkIcon } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 type EditBookmarkPageProps = {
-    id: string;
-  }
+  id: string;
+};
 
 /**
  * 個別のブックマークの編集ページコンポーネント。
@@ -31,7 +37,7 @@ export default function EditBookmarkPage() {
   // データが正常にロードされた場合は `Bookmark` 型となります。
   const bookmark = useQuery(
     api.bookmarks.getBookmark,
-    { id: bookmarkId as Id<"bookmarks"> } // stringをId<"bookmarks">にキャスト
+    { id: bookmarkId as Id<'bookmarks'> }, // stringをId<"bookmarks">にキャスト
   );
 
   const [ogp, setOgp] = useState<OGPData | null>(null); // OGPデータを保存するための状態
@@ -56,20 +62,26 @@ export default function EditBookmarkPage() {
       setIsOgpLoading(true);
       setFetchError(null); // OGPフェッチエラーをリセット
       try {
-        const ogpResponse = await fetch(`/api/ogp?url=${encodeURIComponent(url)}`);
+        const ogpResponse = await fetch(
+          `/api/ogp?url=${encodeURIComponent(url)}`,
+        );
         if (ogpResponse.ok) {
           const ogpData: OGPData = await ogpResponse.json();
           setOgp(ogpData);
         } else {
           const errorData = await ogpResponse.json();
-          const errorMessage = errorData.error || `${ogpResponse.status} ${ogpResponse.statusText}`;
+          const errorMessage =
+            errorData.error ||
+            `${ogpResponse.status} ${ogpResponse.statusText}`;
           console.warn(`Failed to fetch OGP for ${url}: ${errorMessage}`);
           setFetchError(`OGP情報の取得に失敗しました: ${errorMessage}`);
           setOgp(null); // OGP情報が取得できなかった場合はクリア
         }
       } catch (ogpError: any) {
         console.error(`Error fetching OGP for ${url}:`, ogpError);
-        setFetchError(`OGP情報の取得中にエラーが発生しました: ${ogpError.message || "予期せぬエラー"}`);
+        setFetchError(
+          `OGP情報の取得中にエラーが発生しました: ${ogpError.message || '予期せぬエラー'}`,
+        );
         setOgp(null);
       } finally {
         setIsOgpLoading(false);
@@ -90,20 +102,20 @@ export default function EditBookmarkPage() {
       // Convexのミューテーションを呼び出してブックマークを更新します。
       // memoが空文字列の場合はundefinedに変換し、Convexのoptional型に合わせます。
       await updateBookmark({
-        id: bookmarkId as Id<"bookmarks">, // stringをId<"bookmarks">にキャスト
+        id: bookmarkId as Id<'bookmarks'>, // stringをId<"bookmarks">にキャスト
         url: formData.url,
         title: formData.title,
         memo: formData.memo === '' ? undefined : formData.memo,
         tags: formData.tags || [],
       });
-      toast.success("更新成功", {
-        description: "ブックマークが正常に更新されました。",
+      toast.success('更新成功', {
+        description: 'ブックマークが正常に更新されました。',
       });
       router.push('/bookmarks'); // 更新後、ブックマーク一覧ページへ遷移
       router.refresh(); // Next.jsルーターのキャッシュをクリアし、UIを最新に保つ
     } catch (error: any) {
-      toast.error("更新エラー", {
-        description: `ブックマークの更新中にエラーが発生しました: ${error.message || "予期せぬエラー"}`,
+      toast.error('更新エラー', {
+        description: `ブックマークの更新中にエラーが発生しました: ${error.message || '予期せぬエラー'}`,
       });
       console.error('Error updating bookmark:', error);
     } finally {
@@ -162,11 +174,15 @@ export default function EditBookmarkPage() {
   if (bookmark === null) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] text-center p-4">
-        <h2 className="text-2xl font-bold text-red-500 mb-4">ブックマークが見つかりませんでした。</h2>
+        <h2 className="text-2xl font-bold text-red-500 mb-4">
+          ブックマークが見つかりませんでした。
+        </h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
           指定されたブックマークは存在しないか、閲覧する権限がありません。
         </p>
-        <Button onClick={() => router.push('/bookmarks')}>ブックマーク一覧に戻る</Button>
+        <Button onClick={() => router.push('/bookmarks')}>
+          ブックマーク一覧に戻る
+        </Button>
       </div>
     );
   }
@@ -190,7 +206,9 @@ export default function EditBookmarkPage() {
                 alt={displayTitle || 'OGP Image'}
                 className="w-full h-full object-cover"
                 // 画像ロード失敗時に非表示にする
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
           ) : isOgpLoading ? (
@@ -203,17 +221,27 @@ export default function EditBookmarkPage() {
             </div>
           )}
           <CardTitle className="text-3xl font-bold line-clamp-2 break-all">
-            <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-600 dark:text-blue-400 flex items-center gap-2">
+            <a
+              href={displayUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline text-blue-600 dark:text-blue-400 flex items-center gap-2"
+            >
               {displayTitle} <ExternalLinkIcon className="h-5 w-5" />
             </a>
           </CardTitle>
           {displaySiteName && (
-             <CardDescription className="text-base text-gray-600 dark:text-gray-400">
-               {displaySiteName}
-             </CardDescription>
+            <CardDescription className="text-base text-gray-600 dark:text-gray-400">
+              {displaySiteName}
+            </CardDescription>
           )}
           <CardDescription className="text-sm line-clamp-1 break-all mt-1">
-            <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="text-gray-500 dark:text-gray-400 hover:underline">
+            <a
+              href={displayUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 dark:text-gray-400 hover:underline"
+            >
               {displayUrl}
             </a>
           </CardDescription>

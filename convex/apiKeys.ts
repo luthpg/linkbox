@@ -1,9 +1,9 @@
+import type { ApiKey } from '@/types/api-key';
 import { v } from 'convex/values';
 import { customAlphabet } from 'nanoid';
 import { internal } from './_generated/api';
 import { internalQuery, mutation, query } from './_generated/server';
 import { sha256 } from './lib/utils';
-import type { ApiKey } from '@/types/api-key';
 
 // nanoidを使ってAPIキーの一部を生成（よりランダムで安全なキーにするため）
 const generateSecureId = customAlphabet(
