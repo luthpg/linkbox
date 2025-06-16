@@ -1,1 +1,2 @@
-export const GET = () => new Response(null, { status: 404 });
+import { NextResponse } from 'next/server';
+export const GET = () => NextResponse.json({ error: 'Not Found' }, { status: 400 });
