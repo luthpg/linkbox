@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Bookmark } from '@/types/bookmark';
 import type { OGPData } from '@/types/ogp';
 import { PencilIcon, Trash2Icon } from 'lucide-react';
+import Link from 'next/link';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
@@ -97,7 +98,9 @@ export function BookmarkCard({
           <div className="flex flex-wrap gap-2 mt-auto mb-4">
             {bookmark.tags.map((tag) => (
               <Badge key={tag} variant="secondary">
-                {tag}
+                <button type="button">
+                  <Link href={`/bookmarks?tag=${tag}`}>{tag}</Link>
+                </button>
               </Badge>
             ))}
           </div>

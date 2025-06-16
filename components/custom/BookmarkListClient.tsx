@@ -48,7 +48,7 @@ export function BookmarkListClient({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 'ogpLoadingMap' ignore infinite loop
   useEffect(() => {
-    if (bookmarks == undefined) return; // bookmarksがまだロードされていない場合は何もしない
+    if (bookmarks === undefined) return; // bookmarksがまだロードされていない場合は何もしない
 
     const fetchOgpForBookmark = async (bookmark: Bookmark) => {
       if (ogpLoadingMap.get(bookmark.id) || ogpDataMap.has(bookmark.id)) {

@@ -1,5 +1,4 @@
-import { BookmarkFormSchema } from '@/types/bookmark';
-// convex/http.ts
+import { type Bookmark, BookmarkFormSchema } from '@/types/bookmark';
 import { httpRouter } from 'convex/server';
 import { ZodError } from 'zod';
 import { internal } from './_generated/api';
@@ -38,7 +37,7 @@ http.route({
       });
     }
 
-    let body;
+    let body: { args: Bookmark };
     try {
       body = await request.json();
     } catch (e) {
@@ -49,21 +48,21 @@ http.route({
     }
 
     try {
-      const validatedData = BookmarkFormSchema.parse(body);
+      const validatedData = BookmarkFormSchema.parse(body.args);
 
       const memoToSave =
-        validatedData.memo === '' ? undefined : validatedData.memo;
+        validatedData.memo != null && validatedData.memo !== ''
+          ? validatedData.memo
+          : undefined;
 
-      // HTTPアクションから呼び出すための専用内部ミューテーションを呼び出し
-      // createBookmarkByApi に ConvexユーザーID (userId) を渡す
       const bookmarkId = await ctx.runMutation(
         internal.bookmarks.createBookmarkByApi,
         {
-          userId: userId, // APIキーで認証されたConvexユーザーID
+          userId: userId,
           url: validatedData.url,
           title: validatedData.title,
           memo: memoToSave,
-          tags: validatedData.tags,
+          tags: validatedData.tags ?? [],
         },
       );
 
