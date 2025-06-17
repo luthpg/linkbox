@@ -48,6 +48,9 @@ http.route({
     }
 
     try {
+      if (typeof body.args.tags === 'string') {
+        body.args.tags = (body.args.tags as string).split(',');
+      }
       const validatedData = BookmarkFormSchema.parse(body.args);
 
       const memoToSave =
