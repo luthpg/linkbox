@@ -129,22 +129,24 @@ export function BookmarkListClient({
   if (bookmarks === undefined) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Card key={index} className="flex flex-col h-full">
-            <Skeleton className="w-full h-40 rounded-t-lg" />
-            <CardHeader className="pb-3 flex-grow">
-              <Skeleton className="h-6 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-5/6" />
-            </CardHeader>
-            <CardContent className="flex flex-col justify-end p-6 pt-0">
-              <Skeleton className="h-16 w-full mb-4" />
-              <div className="flex justify-end gap-2">
-                <Skeleton className="h-9 w-9 rounded-md" />
-                <Skeleton className="h-9 w-9 rounded-md" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {Array.from({ length: 6 })
+          .map((_, index) => index.toString())
+          .map((index) => (
+            <Card key={index} className="flex flex-col h-full">
+              <Skeleton className="w-full h-40 rounded-t-lg" />
+              <CardHeader className="pb-3 flex-grow">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-5/6" />
+              </CardHeader>
+              <CardContent className="flex flex-col justify-end p-6 pt-0">
+                <Skeleton className="h-16 w-full mb-4" />
+                <div className="flex justify-end gap-2">
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
       </div>
     );
   }

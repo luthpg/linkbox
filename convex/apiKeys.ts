@@ -2,10 +2,13 @@ import type { ApiKey } from '@/types/api-key';
 import { v } from 'convex/values';
 import { customAlphabet } from 'nanoid';
 import { internal } from './_generated/api';
+import type { Id } from './_generated/dataModel';
 import { internalQuery, mutation, query } from './_generated/server';
 import { sha256 } from './lib/utils';
 
-// nanoidを使ってAPIキーの一部を生成（よりランダムで安全なキーにするため）
+/**
+ * nanoidを使ってAPIキーの一部を生成（よりランダムで安全なキーにするため）
+ */
 const generateSecureId = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
   32,
@@ -59,15 +62,21 @@ export const getApiKeys = query({
  */
 export const generateApiKey = mutation({
   args: { name: v.optional(v.string()) },
-  handler: async (ctx, { name }) => {
+  handler: async (
+    ctx,
+    { name },
+  ): Promise<{
+    id: string;
+    api_key: string;
+    name: string | undefined;
+    created_at: string;
+  }> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error('認証されていません。');
     }
     const clerkUserId = identity.subject;
 
-    // ClerkのuserIdでConvexのユーザーを検索
-    // ユーザーがConvexに存在しない場合、作成する内部ミューテーションを呼び出す
     let user = await ctx.db
       .query('users')
       .withIndex('by_tokenIdentifier', (q) =>
@@ -76,14 +85,19 @@ export const generateApiKey = mutation({
       .first();
 
     if (!user) {
-      // ユーザーが存在しない場合、内部ミューテーションを呼び出してユーザーを作成
-      const userId = await ctx.runMutation(internal.users.createConvexUser, {
-        clerkUserId: clerkUserId,
-        email: identity.email || undefined,
-        name: identity.name || undefined,
-        pictureUrl: identity.pictureUrl || undefined,
-      });
-      user = (await ctx.db.get(userId))!;
+      const userId: Id<'users'> = await ctx.runMutation(
+        internal.users.createConvexUser,
+        {
+          clerkUserId: clerkUserId,
+          email: identity.email || undefined,
+          name: identity.name || undefined,
+          pictureUrl: identity.pictureUrl || undefined,
+        },
+      );
+      user = await ctx.db.get(userId);
+      if (!user) {
+        throw new Error('ユーザーの作成に失敗しました。');
+      }
     }
 
     const rawApiKey = API_KEY_PREFIX + generateSecureId();

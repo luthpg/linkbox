@@ -60,12 +60,8 @@ export function BookmarkForm({
     },
   });
 
-  // `initialData` が変更されたときにフォームの値をリセットまたは設定します。
-  // これにより、編集モードと新規作成モードの切り替えや、異なるブックマークを編集する際のフォームの状態を管理します。
   useEffect(() => {
     if (initialData) {
-      // initialDataがある場合、フォームにその値を設定します。
-      // memoがnullの場合に空文字列に変換して、フォームの入力フィールドが制御コンポーネントとして正しく機能するようにします。
       form.reset({
         url: initialData.url,
         title: initialData.title,
@@ -73,10 +69,9 @@ export function BookmarkForm({
         tags: initialData.tags || [],
       });
     } else {
-      // initialDataがない場合（新規作成モード）、フォームをクリアします。
       form.reset();
     }
-  }, [initialData, form]); // initialDataまたはformインスタンスの変更時にエフェクトを再実行
+  }, [initialData, form]);
 
   /**
    * タグ入力フィールドでEnterキーが押されたときのハンドラ。
@@ -88,17 +83,15 @@ export function BookmarkForm({
     e: React.KeyboardEvent<HTMLInputElement>,
     field: ControllerRenderProps<BookmarkFormData, 'tags'>,
   ) => {
-    // Enterキーが押され、かつ入力値が空白でない場合
     if (e.key === 'Enter' && e.currentTarget.value.trim() !== '') {
-      e.preventDefault(); // Enterキーによるフォーム全体の送信を防止
-      const newTag = e.currentTarget.value.trim().toLowerCase(); // 入力値をトリムして小文字に変換
-      const currentTags = field.value || []; // 現在のタグリストを取得 (undefined/nullの場合は空配列)
+      e.preventDefault();
+      const newTag = e.currentTarget.value.trim().toLowerCase();
+      const currentTags = field.value || [];
 
-      // 新しいタグが既存のタグリストに含まれていない場合のみ追加
       if (!currentTags.includes(newTag)) {
-        field.onChange([...currentTags, newTag]); // React Hook FormのonChangeを使ってタグリストを更新
+        field.onChange([...currentTags, newTag]);
       }
-      e.currentTarget.value = ''; // 入力フィールドをクリア
+      e.currentTarget.value = '';
     }
   };
 
@@ -111,7 +104,6 @@ export function BookmarkForm({
     tagToRemove: string,
     field: ControllerRenderProps<BookmarkFormData, 'tags'>,
   ) => {
-    // 削除対象のタグを除外した新しいタグリストで更新
     field.value != null &&
       field.onChange(field.value.filter((tag: string) => tag !== tagToRemove));
   };
@@ -178,7 +170,6 @@ export function BookmarkForm({
                 <FormItem>
                   <FormLabel>メモ (任意)</FormLabel>
                   <FormControl>
-                    {/* `field.value`がnullになる可能性があるので、空文字列に変換してControlled Componentにする */}
                     <Textarea
                       placeholder="このブックマークに関するメモ"
                       {...field}

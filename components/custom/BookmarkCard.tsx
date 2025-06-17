@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Id } from '@/convex/_generated/dataModel';
 import type { Bookmark } from '@/types/bookmark';
 import type { OGPData } from '@/types/ogp';
 import { PencilIcon, Trash2Icon } from 'lucide-react';
@@ -20,7 +21,7 @@ interface BookmarkCardProps {
   ogp?: OGPData | null;
   isOgpLoading?: boolean;
   onEdit: (bookmarkId: string) => void;
-  onDelete: (bookmarkId: string) => void;
+  onDelete: (bookmarkId: Id<'bookmarks'>) => void;
 }
 
 /**
@@ -40,12 +41,12 @@ export function BookmarkCard({
   onEdit,
   onDelete,
 }: BookmarkCardProps) {
-  const displayTitle = ogp?.ogTitle || bookmark.title;
-  const displayDescription = ogp?.ogDescription || bookmark.memo;
+  const displayTitle = bookmark.title || ogp?.ogTitle || bookmark.url;
+  const displayDescription = bookmark.memo || ogp?.ogDescription;
   const displayImage = ogp?.ogImage;
 
   return (
-    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
+    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-200 pt-0">
       {isOgpLoading ? (
         <Skeleton className="w-full h-40 rounded-t-lg" />
       ) : displayImage ? (
@@ -62,7 +63,7 @@ export function BookmarkCard({
         </div>
       ) : (
         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 rounded-t-lg text-sm">
-          [Image of Placeholder]
+          [No Image]
         </div>
       )}
 
@@ -117,7 +118,7 @@ export function BookmarkCard({
           <Button
             variant="destructive"
             size="icon"
-            onClick={() => onDelete(bookmark.id)}
+            onClick={() => onDelete(bookmark.id as Id<'bookmarks'>)}
             aria-label="削除"
           >
             <Trash2Icon className="h-4 w-4" />

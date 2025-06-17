@@ -92,12 +92,14 @@ export default function MainLayout({
             children
           ) : (
             <div className="flex flex-1 flex-col gap-4 px-4 py-10">
-              {[...new Array(5)].map((_, i) => (
-                <Skeleton
-                  key={`skeleton-${i}`}
-                  className="bg-muted/50 mx-auto h-24 w-full max-w-3xl rounded-xl"
-                />
-              ))}
+              {[...new Array(5)]
+                .map((_, index) => index.toString())
+                .map((index) => (
+                  <Skeleton
+                    key={`skeleton-${index}`}
+                    className="bg-muted/50 mx-auto h-24 w-full max-w-3xl rounded-xl"
+                  />
+                ))}
             </div>
           )}
         </main>

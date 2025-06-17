@@ -37,7 +37,7 @@ export function NavMain({
               <button
                 type="button"
                 onClick={() => {
-                  item.onClick && item.onClick();
+                  item.onClick?.();
                   isMobile && toggleSidebar();
                 }}
               >

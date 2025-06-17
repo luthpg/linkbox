@@ -1,6 +1,5 @@
 import { v } from 'convex/values';
-import { internal } from './_generated/api';
-// convex/users.ts
+import type { Id } from './_generated/dataModel';
 import { internalMutation, mutation, query } from './_generated/server';
 
 /**
@@ -10,41 +9,26 @@ import { internalMutation, mutation, query } from './_generated/server';
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    // Clerkの認証情報からuserIdを取得
-    // ctx.auth.getUserIdentity() は ClerkProviderWithConvex によってClerkの認証情報を提供します。
     const identity = await ctx.auth.getUserIdentity();
 
     if (!identity) {
-      return null; // 認証されていない
+      return null;
     }
 
-    // ClerkのuserIdはidentity.subject (JWTのsubクレーム) に格納される
     const clerkUserId = identity.subject;
 
-    // ClerkのuserIdでConvexのユーザーを検索
-    let user = await ctx.db
+    const user = await ctx.db
       .query('users')
       .withIndex('by_tokenIdentifier', (q) =>
         q.eq('tokenIdentifier', clerkUserId),
       )
       .first();
 
-    // ユーザーがConvexに存在しない場合、作成するミューテーションを呼び出す
-    // クエリ内でミューテーションを直接呼び出すことはできないため、内部ミューテーションを`ctx.runMutation`で呼び出す
     if (!user) {
-      // 内部ミューテーションを呼び出してユーザーを作成
-      // internalは_generated/apiからインポートする
-      const userId = await ctx.runMutation(internal.users.createConvexUser, {
-        clerkUserId: clerkUserId,
-        email: identity.email || undefined, // Clerkから提供されるメールアドレスがあれば
-        name: identity.name || undefined, // Clerkから提供される名前があれば
-        pictureUrl: identity.pictureUrl || undefined, // Clerkから提供される画像URLがあれば
-      });
-      // 作成されたユーザーを再取得
-      user = (await ctx.db.get(userId))!;
+      return null;
     }
 
-    return user; // ユーザーオブジェクトを返す (Convexの_id, _creationTimeなどを含む)
+    return user;
   },
 });
 
@@ -59,15 +43,17 @@ export const createConvexUser = internalMutation({
     name: v.optional(v.string()),
     pictureUrl: v.optional(v.string()),
   },
-  handler: async (ctx, { clerkUserId, email, name, pictureUrl }) => {
-    // 新しいユーザーをusersテーブルに挿入
+  handler: async (
+    ctx,
+    { clerkUserId, email, name, pictureUrl },
+  ): Promise<Id<'users'>> => {
     const userId = await ctx.db.insert('users', {
-      tokenIdentifier: clerkUserId, // ClerkのuserIdをConvexのtokenIdentifierとして保存
+      tokenIdentifier: clerkUserId,
       email: email,
       name: name,
       pictureUrl: pictureUrl,
     });
-    return userId; // 新しく作成されたConvexユーザーのIDを返す
+    return userId;
   },
 });
 
@@ -77,9 +63,10 @@ export const createConvexUser = internalMutation({
 export const updateUserProfile = mutation({
   args: {
     name: v.optional(v.string()),
-    // その他のプロフィールフィールド
+    email: v.optional(v.string()),
+    pictureUrl: v.optional(v.string()),
   },
-  handler: async (ctx, { name }) => {
+  handler: async (ctx, { name, email, pictureUrl }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error('認証されていません。');
@@ -99,6 +86,8 @@ export const updateUserProfile = mutation({
 
     await ctx.db.patch(user._id, {
       name: name,
+      email: email,
+      pictureUrl: pictureUrl,
     });
   },
 });

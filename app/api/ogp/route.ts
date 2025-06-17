@@ -79,9 +79,9 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(ogp);
-  } catch (error: any) {
+  } catch (error) {
     console.error(`Error processing OGP for ${targetUrl}:`, error);
-    if (error.name === 'AbortError') {
+    if ((error as Error).name === 'AbortError') {
       return NextResponse.json(
         { error: 'URLのフェッチがタイムアウトしました。' },
         { status: 504 },

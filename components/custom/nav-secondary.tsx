@@ -46,7 +46,7 @@ export function NavSecondary({
                   <button
                     type="button"
                     onClick={() => {
-                      item.onClick && item.onClick();
+                      item.onClick?.();
                       isMobile && toggleSidebar();
                     }}
                   >

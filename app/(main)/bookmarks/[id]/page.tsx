@@ -1,6 +1,7 @@
 'use client';
 
 import { BookmarkForm } from '@/components/custom/BookmarkForm';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -29,7 +30,7 @@ type EditBookmarkPageProps = {
  */
 export default function EditBookmarkPage() {
   const router = useRouter();
-  const { id } = useParams<EditBookmarkPageProps>();
+  const { id: bookmarkId } = useParams<EditBookmarkPageProps>();
 
   // ConvexのuseQueryを使って単一のブックマークを取得します。
   // `bookmarkId` が有効なConvex IDの文字列でない場合、クエリを実行しません。
@@ -77,10 +78,10 @@ export default function EditBookmarkPage() {
           setFetchError(`OGP情報の取得に失敗しました: ${errorMessage}`);
           setOgp(null); // OGP情報が取得できなかった場合はクリア
         }
-      } catch (ogpError: any) {
+      } catch (ogpError) {
         console.error(`Error fetching OGP for ${url}:`, ogpError);
         setFetchError(
-          `OGP情報の取得中にエラーが発生しました: ${ogpError.message || '予期せぬエラー'}`,
+          `OGP情報の取得中にエラーが発生しました: ${(ogpError as Error).message || '予期せぬエラー'}`,
         );
         setOgp(null);
       } finally {
@@ -105,7 +106,10 @@ export default function EditBookmarkPage() {
         id: bookmarkId as Id<'bookmarks'>, // stringをId<"bookmarks">にキャスト
         url: formData.url,
         title: formData.title,
-        memo: formData.memo === '' ? undefined : formData.memo,
+        memo:
+          formData.memo != null && formData.memo !== ''
+            ? formData.memo
+            : undefined,
         tags: formData.tags || [],
       });
       toast.success('更新成功', {
@@ -113,9 +117,9 @@ export default function EditBookmarkPage() {
       });
       router.push('/bookmarks'); // 更新後、ブックマーク一覧ページへ遷移
       router.refresh(); // Next.jsルーターのキャッシュをクリアし、UIを最新に保つ
-    } catch (error: any) {
+    } catch (error) {
       toast.error('更新エラー', {
-        description: `ブックマークの更新中にエラーが発生しました: ${error.message || '予期せぬエラー'}`,
+        description: `ブックマークの更新中にエラーが発生しました: ${(error as Error).message || '予期せぬエラー'}`,
       });
       console.error('Error updating bookmark:', error);
     } finally {
@@ -137,7 +141,6 @@ export default function EditBookmarkPage() {
   if (bookmark === undefined) {
     return (
       <div className="flex flex-col items-center justify-center p-4">
-        {/* OGPプレビューのスケルトン */}
         <Card className="w-full max-w-2xl mx-auto mb-6">
           <CardHeader className="pb-3">
             <Skeleton className="w-full h-48 rounded-t-lg mb-4" />
@@ -149,7 +152,6 @@ export default function EditBookmarkPage() {
             <Skeleton className="h-24 w-full" />
           </CardContent>
         </Card>
-        {/* 編集フォームのスケルトン */}
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
             <Skeleton className="h-7 w-1/2 mb-2" />
@@ -170,7 +172,6 @@ export default function EditBookmarkPage() {
     );
   }
 
-  // ブックマークがnull（Convexで見つからない、またはアクセス権限がないなど）の場合の表示
   if (bookmark === null) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] text-center p-4">
@@ -188,10 +189,10 @@ export default function EditBookmarkPage() {
   }
 
   // OGP情報があれば優先して表示、なければブックマーク自身の情報でフォールバック
-  const displayTitle = ogp?.ogTitle || bookmark.title;
-  const displayDescription = ogp?.ogDescription || bookmark.memo;
+  const displayTitle = bookmark.title ?? ogp?.ogTitle;
+  const displayDescription = bookmark.memo ?? ogp?.ogDescription;
   const displayImage = ogp?.ogImage;
-  const displayUrl = ogp?.ogUrl || bookmark.url;
+  const displayUrl = bookmark.url ?? ogp?.ogUrl;
   const displaySiteName = ogp?.ogSiteName;
 
   return (
@@ -205,7 +206,6 @@ export default function EditBookmarkPage() {
                 src={displayImage}
                 alt={displayTitle || 'OGP Image'}
                 className="w-full h-full object-cover"
-                // 画像ロード失敗時に非表示にする
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}
@@ -217,7 +217,7 @@ export default function EditBookmarkPage() {
             </div>
           ) : (
             <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 rounded-t-lg text-sm mb-4">
-              [Image of Placeholder]
+              [No Image]
             </div>
           )}
           <CardTitle className="text-3xl font-bold line-clamp-2 break-all">
@@ -227,7 +227,8 @@ export default function EditBookmarkPage() {
               rel="noopener noreferrer"
               className="hover:underline text-blue-600 dark:text-blue-400 flex items-center gap-2"
             >
-              {displayTitle} <ExternalLinkIcon className="h-5 w-5" />
+              {displayTitle}{' '}
+              <ExternalLinkIcon className="ml-2 pt-2 h-13 w-13 sm:h-8 sm:w-8" />
             </a>
           </CardTitle>
           {displaySiteName && (

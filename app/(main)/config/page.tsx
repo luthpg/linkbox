@@ -57,10 +57,13 @@ export default function ApiKeysPage() {
       setFetchError(null);
       try {
         const data = useQuery(api.apiKeys.getApiKeys);
+        if (!data) throw new Error('Failed to fetch API keys');
         setApiKeys(data);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Failed to fetch API keys:', err);
-        setFetchError(`APIキーの取得中にエラーが発生しました: ${err.message}`);
+        setFetchError(
+          `APIキーの取得中にエラーが発生しました: ${(err as Error).message}`,
+        );
       } finally {
         setIsLoading(false);
       }
@@ -75,10 +78,9 @@ export default function ApiKeysPage() {
     if (!validationResult.success) {
       setKeyNameError(validationResult.error.errors[0].message);
       return;
-    } else {
-      setKeyNameError(null);
     }
 
+    setKeyNameError(null);
     setIsGenerating(true);
     setFetchError(null);
     setNewlyGeneratedKey(null);
@@ -108,10 +110,10 @@ export default function ApiKeysPage() {
         description:
           '新しいAPIキーが正常に生成されました。一度だけ表示されます。',
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to generate API key:', err);
       toast.error('APIキーの生成に失敗しました', {
-        description: err.message || 'エラーが発生しました。',
+        description: (err as Error).message || 'エラーが発生しました。',
       });
     } finally {
       setIsGenerating(false);
@@ -147,10 +149,10 @@ export default function ApiKeysPage() {
       toast.success('APIキーを削除しました', {
         description: '指定されたAPIキーが正常に削除されました。',
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to delete API key:', err);
       toast.error('APIキーの削除に失敗しました', {
-        description: err.message || 'エラーが発生しました。',
+        description: (err as Error).message || 'エラーが発生しました。',
       });
     } finally {
       setIsDeleting(false);
