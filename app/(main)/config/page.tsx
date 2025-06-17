@@ -20,10 +20,10 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { api } from '@/convex/_generated/api';
-import type { ApiKey } from '@/types/api-key';
-import { useQuery } from 'convex/react';
+import type { Id } from '@/convex/_generated/dataModel';
+import { useMutation, useQuery } from 'convex/react';
 import { CopyIcon, PlusIcon, Trash2Icon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -37,12 +37,11 @@ const maskApiKey = (key: string) => {
   return `${key.substring(0, 7)}...${key.substring(key.length - 4)}`;
 };
 
-export default function ApiKeysPage() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+/**
+ * APIキー管理ページコンポーネント。
+ * ConvexのuseQueryとuseMutationフックを使用してAPIキーの取得、生成、削除を行います。
+ */
+export default function ConfigPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [keyToDelete, setKeyToDelete] = useState<string | null>(null);
   const [newlyGeneratedKey, setNewlyGeneratedKey] = useState<string | null>(
@@ -50,27 +49,37 @@ export default function ApiKeysPage() {
   );
   const [keyNameInput, setKeyNameInput] = useState('');
   const [keyNameError, setKeyNameError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    const fetchApiKeys = async () => {
-      setIsLoading(true);
-      setFetchError(null);
-      try {
-        const data = useQuery(api.apiKeys.getApiKeys);
-        if (!data) throw new Error('Failed to fetch API keys');
-        setApiKeys(data);
-      } catch (err) {
-        console.error('Failed to fetch API keys:', err);
-        setFetchError(
-          `APIキーの取得中にエラーが発生しました: ${(err as Error).message}`,
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchApiKeys();
-  }, []);
+  // --- Convexフック ---
+  // APIキー一覧を取得 (リアルタイム同期)
+  // `apiKeys` はロード中 `undefined`、エラー/未認証 `null`、データあり `ApiKey[]` となります。
+  const apiKeys = useQuery(api.apiKeys.getApiKeys);
 
+  const generateApiKeyMutation = useMutation(api.apiKeys.generateApiKey);
+  const generateApiKeyProcedure = async (
+    ...arg: Parameters<typeof generateApiKeyMutation>
+  ) => {
+    setIsGenerating(true);
+    const response = await generateApiKeyMutation(...arg);
+    setIsGenerating(false);
+    return response;
+  };
+  const deleteApiKeyMutation = useMutation(api.apiKeys.deleteApiKey);
+  const deleteApiKeyProcedure = async (
+    ...arg: Parameters<typeof deleteApiKeyMutation>
+  ) => {
+    setIsDeleting(true);
+    const response = await deleteApiKeyMutation(...arg);
+    setIsDeleting(false);
+    return response;
+  };
+
+  /**
+   * APIキー生成ボタンのハンドラ。
+   * 入力されたキー名で新しいAPIキーを生成します。
+   */
   const handleGenerateKey = async () => {
     const validationResult = ApiKeyNameSchema.safeParse(
       keyNameInput.trim() || null,
@@ -79,98 +88,78 @@ export default function ApiKeysPage() {
       setKeyNameError(validationResult.error.errors[0].message);
       return;
     }
-
     setKeyNameError(null);
-    setIsGenerating(true);
-    setFetchError(null);
     setNewlyGeneratedKey(null);
 
     try {
-      const response = await fetch('/api/api-keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: keyNameInput.trim() || undefined }),
+      const data = await generateApiKeyProcedure({
+        name: keyNameInput.trim() || undefined,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || `Error: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const data = await response.json();
-      setApiKeys((prev) => [data, ...prev]);
       setNewlyGeneratedKey(data.api_key);
       setKeyNameInput('');
 
       toast.success('APIキーを生成しました', {
         description:
-          '新しいAPIキーが正常に生成されました。一度だけ表示されます。',
+          '新しいAPIキーが正常に生成されました。このキーは一度しか表示されません。',
       });
     } catch (err) {
       console.error('Failed to generate API key:', err);
       toast.error('APIキーの生成に失敗しました', {
         description: (err as Error).message || 'エラーが発生しました。',
       });
-    } finally {
-      setIsGenerating(false);
     }
   };
 
+  /**
+   * 削除ボタンクリック時のハンドラ。
+   * 確認ダイアログを表示します。
+   * @param id 削除対象のAPIキーのID
+   */
   const handleDeleteClick = (id: string) => {
     setKeyToDelete(id);
     setShowDeleteConfirm(true);
   };
 
+  /**
+   * 削除確認ダイアログでの確定ボタンハンドラ。
+   * 選択されたAPIキーを削除します。
+   */
   const confirmDelete = async () => {
     if (!keyToDelete) return;
 
-    setIsDeleting(true);
     setShowDeleteConfirm(false);
 
     try {
-      const response = await fetch(`/api/api-keys/${keyToDelete}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || `Error: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      setApiKeys((prev) => prev.filter((key) => key.id !== keyToDelete));
+      await deleteApiKeyProcedure({ id: keyToDelete as Id<'apiKeys'> });
       setKeyToDelete(null);
 
       toast.success('APIキーを削除しました', {
         description: '指定されたAPIキーが正常に削除されました。',
       });
     } catch (err) {
+      // エラーをanyとしてキャッチ
       console.error('Failed to delete API key:', err);
       toast.error('APIキーの削除に失敗しました', {
         description: (err as Error).message || 'エラーが発生しました。',
       });
-    } finally {
-      setIsDeleting(false);
     }
   };
 
+  /**
+   * 削除確認ダイアログでのキャンセルボタンハンドラ。
+   */
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
     setKeyToDelete(null);
   };
 
+  /**
+   * テキストをクリップボードにコピーするハンドラ。
+   * @param text コピーする文字列
+   */
   const copyToClipboard = (text: string) => {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
     try {
-      document.execCommand('copy');
+      navigator.clipboard.writeText(text);
       toast.info('コピーしました', {
         description: 'APIキーがクリップボードにコピーされました。',
       });
@@ -179,18 +168,42 @@ export default function ApiKeysPage() {
       toast.error('コピーに失敗しました', {
         description: 'APIキーのコピーに失敗しました。',
       });
-    } finally {
-      document.body.removeChild(textarea);
     }
   };
+
+  // --- UIレンダリング ---
+
+  // apiKeysがundefinedの場合（Convexからデータロード中）
+  if (apiKeys === undefined) {
+    return (
+      <div className="flex flex-col gap-6 p-4">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          APIキー管理
+        </h1>
+        <p>APIキーを読み込み中...</p>
+      </div>
+    );
+  }
+
+  // apiKeysがnullの場合（未認証またはConvex関数からのエラー）
+  if (apiKeys === null) {
+    return (
+      <div className="flex flex-col gap-6 p-4 text-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          APIキー管理
+        </h1>
+        <p className="text-red-500">
+          APIキーの取得に失敗しました。ログインしていることを確認してください。
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
         APIキー管理
       </h1>
-
-      {fetchError && <div className="text-red-500 mb-4">{fetchError}</div>}
 
       <Card>
         <CardHeader>
@@ -222,7 +235,7 @@ export default function ApiKeysPage() {
           </div>
           <Button
             onClick={handleGenerateKey}
-            disabled={isGenerating || !!keyNameError}
+            disabled={isGenerating || !!keyNameError} // isGeneratingをConvexフックから取得
             className="flex items-center gap-2"
           >
             {isGenerating ? (
@@ -259,9 +272,7 @@ export default function ApiKeysPage() {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-6">
         既存のAPIキー
       </h2>
-      {isLoading ? (
-        <p>APIキーを読み込み中...</p>
-      ) : apiKeys.length === 0 ? (
+      {apiKeys.length === 0 ? ( // apiKeysが空配列の場合
         <p className="text-gray-600 dark:text-gray-300">
           まだAPIキーがありません。上記で生成してください。
         </p>
@@ -286,7 +297,7 @@ export default function ApiKeysPage() {
                   variant="destructive"
                   size="icon"
                   onClick={() => handleDeleteClick(key.id)}
-                  disabled={isDeleting}
+                  disabled={isDeleting} // isDeletingをConvexフックから取得
                 >
                   <Trash2Icon className="h-4 w-4" />
                 </Button>
