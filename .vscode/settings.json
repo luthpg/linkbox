@@ -1,0 +1,8 @@
+{
+  "files.watcherExclude": {
+    "convex/_generated/**": true
+  },
+  "files.readonlyInclude": {
+    "convex/_generated/**": true
+  }
+}
