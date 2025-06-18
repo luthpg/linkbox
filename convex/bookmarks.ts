@@ -2,15 +2,15 @@ import type { Bookmark } from '@/types/bookmark';
 import { v } from 'convex/values';
 import { internal } from './_generated/api'; // internal api をインポート
 import type { Id } from './_generated/dataModel';
-// convex/bookmarks.ts
 import { internalMutation, mutation, query } from './_generated/server';
+import { decodeHtmlEntities } from './lib/utils';
 
 /**
  * 現在認証されているユーザーのブックマーク一覧を取得するクエリ。
  */
 export const getBookmarks = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<Bookmark[] | null> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return null; // 認証されていない場合はnullを返す
@@ -49,7 +49,7 @@ export const getBookmarks = query({
  */
 export const getBookmark = query({
   args: { id: v.id('bookmarks') },
-  handler: async (ctx, { id }) => {
+  handler: async (ctx, { id }): Promise<Bookmark | null> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return null; // 認証されていない場合はnullを返す
@@ -128,9 +128,9 @@ export const createBookmark = mutation({
     const newBookmarkId: Id<'bookmarks'> = await ctx.db.insert('bookmarks', {
       userId: user._id,
       url,
-      title,
-      memo,
-      tags,
+      title: decodeHtmlEntities(title),
+      memo: memo != null ? decodeHtmlEntities(memo) : memo,
+      tags: tags.map((t) => decodeHtmlEntities(t)),
     });
     return newBookmarkId.toString();
   },
@@ -172,9 +172,9 @@ export const updateBookmark = mutation({
 
     await ctx.db.patch(id, {
       url,
-      title,
-      memo,
-      tags,
+      title: decodeHtmlEntities(title),
+      memo: memo != null ? decodeHtmlEntities(memo) : memo,
+      tags: tags.map((t) => decodeHtmlEntities(t)),
     });
   },
 });
@@ -227,9 +227,9 @@ export const createBookmarkByApi = internalMutation({
     const newBookmarkId = await ctx.db.insert('bookmarks', {
       userId: userId,
       url,
-      title,
-      memo,
-      tags,
+      title: decodeHtmlEntities(title),
+      memo: memo != null ? decodeHtmlEntities(memo) : memo,
+      tags: tags.map((t) => decodeHtmlEntities(t)),
     });
     return newBookmarkId.toString();
   },
