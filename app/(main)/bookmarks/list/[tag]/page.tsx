@@ -3,28 +3,24 @@
 import { BookmarkListClient } from '@/components/custom/BookmarkListClient';
 import { api } from '@/convex/_generated/api';
 import type { Bookmark } from '@/types/bookmark';
-import { useAuth } from '@clerk/nextjs';
 import { useQuery } from 'convex/react';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function BookmarksPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+type TagFilteredBookmarksListProps = {
+  tag: string;
+};
+
+export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [tag, setTag] = useState<string | null>(null);
 
+  const { tag: tagInQuery } = useParams<TagFilteredBookmarksListProps>();
   const allBookmarks = useQuery(api.bookmarks.getBookmarks);
 
   useEffect(() => {
-    const getTag = async () => {
-      const { tag } = await searchParams;
-      const singleTag = tag && Array.isArray(tag) ? tag[0] : (tag ?? null);
-      setTag(singleTag);
-    };
-    getTag();
-  }, [searchParams]);
+    setTag(tagInQuery);
+  }, [tagInQuery]);
 
   useEffect(() => {
     const filteredBookmarks =

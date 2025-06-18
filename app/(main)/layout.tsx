@@ -27,7 +27,12 @@ export const PageMaster: Array<{
   icon: LucideIcon;
 }> = [
   {
-    path: '/bookmarks',
+    path: '/bookmarks/list',
+    title: 'ブックマーク',
+    icon: BookmarkCheck,
+  },
+  {
+    path: /\/bookmarks\/list\/.+/,
     title: 'ブックマーク',
     icon: BookmarkCheck,
   },

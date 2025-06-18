@@ -3,7 +3,7 @@ import { httpRouter } from 'convex/server';
 import { ZodError } from 'zod';
 import { internal } from './_generated/api';
 import { httpAction } from './_generated/server';
-import { sha256 } from './lib/utils';
+import { decodeHtmlEntities, sha256 } from './lib/utils';
 
 const http = httpRouter();
 
@@ -55,7 +55,7 @@ http.route({
 
       const memoToSave =
         validatedData.memo != null && validatedData.memo !== ''
-          ? validatedData.memo
+          ? decodeHtmlEntities(validatedData.memo)
           : undefined;
 
       const bookmarkId = await ctx.runMutation(
@@ -63,9 +63,9 @@ http.route({
         {
           userId: userId,
           url: validatedData.url,
-          title: validatedData.title,
+          title: decodeHtmlEntities(validatedData.title),
           memo: memoToSave,
-          tags: validatedData.tags ?? [],
+          tags: validatedData.tags?.map((t) => decodeHtmlEntities(t)) ?? [],
         },
       );
 

@@ -6,7 +6,7 @@ export default function Page() {
     <>
       <h1>Help</h1>
       <Button>
-        <Link href="/bookmarks">return to home</Link>
+        <Link href="/bookmarks/list">return to home</Link>
       </Button>
     </>
   );
