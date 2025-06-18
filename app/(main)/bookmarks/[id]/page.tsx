@@ -115,7 +115,7 @@ export default function EditBookmarkPage() {
       toast.success('更新成功', {
         description: 'ブックマークが正常に更新されました。',
       });
-      router.push('/bookmarks'); // 更新後、ブックマーク一覧ページへ遷移
+      router.push('/bookmarks/list'); // 更新後、ブックマーク一覧ページへ遷移
       router.refresh(); // Next.jsルーターのキャッシュをクリアし、UIを最新に保つ
     } catch (error) {
       toast.error('更新エラー', {
@@ -132,7 +132,7 @@ export default function EditBookmarkPage() {
    * ブックマーク一覧ページへ戻ります。
    */
   const handleCancel = () => {
-    router.push('/bookmarks');
+    router.push('/bookmarks/list');
   };
 
   // --- UIのレンダリングロジック ---
@@ -181,7 +181,7 @@ export default function EditBookmarkPage() {
         <p className="text-gray-600 dark:text-gray-300 mb-6">
           指定されたブックマークは存在しないか、閲覧する権限がありません。
         </p>
-        <Button onClick={() => router.push('/bookmarks')}>
+        <Button onClick={() => router.push('/bookmarks/list')}>
           ブックマーク一覧に戻る
         </Button>
       </div>

@@ -34,7 +34,7 @@ export default function NewBookmarkPage() {
       toast.success('保存成功', {
         description: '新しいブックマークが正常に保存されました。',
       });
-      router.push('/bookmarks');
+      router.push('/bookmarks/list');
       router.refresh();
     } catch (error) {
       toast.error('保存エラー', {
@@ -47,7 +47,7 @@ export default function NewBookmarkPage() {
   };
 
   const handleCancel = () => {
-    router.push('/bookmarks');
+    router.push('/bookmarks/list');
   };
 
   return (

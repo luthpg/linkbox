@@ -1,6 +1,9 @@
 'use client';
 
-import { BookmarkCard } from '@/components/custom/BookmarkCard';
+import {
+  BookmarkCard,
+  BookmarkSimpleCard,
+} from '@/components/custom/BookmarkCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +15,20 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { Bookmark } from '@/types/bookmark';
 import type { OGPData } from '@/types/ogp';
 import { useMutation } from 'convex/react';
@@ -22,19 +37,20 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader } from '../ui/card';
-import { Skeleton } from '../ui/skeleton';
 
 interface BookmarkListClientProps {
   bookmarks: Bookmark[] | undefined | null;
   tag: string | null;
 }
 
+type ListType = 'rich' | 'simple';
+
 export function BookmarkListClient({
   bookmarks,
   tag,
 }: BookmarkListClientProps) {
   const router = useRouter();
+  const [listType, setListType] = useState<ListType>('rich');
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookmarkToDelete, setBookmarkToDelete] =
@@ -43,6 +59,12 @@ export function BookmarkListClient({
   const [ogpLoadingMap, setOgpLoadingMap] = useState<Map<string, boolean>>(
     new Map(),
   );
+
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setListType(isMobile ? 'simple' : 'rich');
+  }, [isMobile]);
 
   const deleteBookmark = useMutation(api.bookmarks.deleteBookmark);
 
@@ -174,25 +196,52 @@ export function BookmarkListClient({
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {tag ? `#${tag}` : '#All'}
           </h1>
+          <div className="ml-auto mr-3">
+            <Select onValueChange={(value) => setListType(value as ListType)}>
+              <SelectTrigger className="w-30">
+                <SelectValue placeholder="List View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>リストビュー</SelectLabel>
+                  <SelectItem value="rich">リッチ</SelectItem>
+                  <SelectItem value="simple">シンプル</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
           <Link href="/bookmarks/new">
             <Button className="flex items-center gap-2">
               <PlusIcon className="h-5 w-5" />
-              ブックマーク追加
+              {!isMobile && 'ブックマーク追加'}
             </Button>
           </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-          {bookmarks.map((bookmark) => (
-            <BookmarkCard
-              key={bookmark.id}
-              bookmark={bookmark}
-              ogp={ogpDataMap.get(bookmark.id)}
-              isOgpLoading={ogpLoadingMap.get(bookmark.id)}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-            />
-          ))}
+          {bookmarks.map((bookmark) =>
+            listType === 'rich' ? (
+              <BookmarkCard
+                key={bookmark.id}
+                bookmark={bookmark}
+                ogp={ogpDataMap.get(bookmark.id)}
+                isOgpLoading={ogpLoadingMap.get(bookmark.id)}
+                onEdit={handleEdit}
+                onDelete={handleDeleteClick}
+              />
+            ) : listType === 'simple' ? (
+              <BookmarkSimpleCard
+                key={bookmark.id}
+                bookmark={bookmark}
+                ogp={ogpDataMap.get(bookmark.id)}
+                isOgpLoading={ogpLoadingMap.get(bookmark.id)}
+                onEdit={handleEdit}
+                onDelete={handleDeleteClick}
+              />
+            ) : (
+              <span key={bookmark.id}>some error occured...</span>
+            ),
+          )}
         </div>
       </div>
 

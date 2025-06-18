@@ -21,3 +21,20 @@ export async function sha256(text: string): Promise<string> {
 
   return hexHash;
 }
+
+/**
+ * HTMLエスケープされた文字列をデコードする関数
+ * @param text HTMLエスケープされた文字列
+ * @returns デコードされた文字列
+ */
+export function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#x60;/g, '`')
+    .replace(/&#x3D;/g, '=');
+}

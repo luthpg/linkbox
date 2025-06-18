@@ -36,7 +36,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     .sort()
     .map((tag) => ({
       name: tag,
-      url: `/bookmarks?tag=${tag}`,
+      url: `/bookmarks/list/${tag}`,
       emoji: '📌',
     }));
 
@@ -51,7 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: '全件表示',
-        url: '/bookmarks',
+        url: '/bookmarks/list',
         icon: Home,
       },
     ],
