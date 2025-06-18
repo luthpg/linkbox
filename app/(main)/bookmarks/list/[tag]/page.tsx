@@ -19,7 +19,7 @@ export default function BookmarksPage() {
   const allBookmarks = useQuery(api.bookmarks.getBookmarks);
 
   useEffect(() => {
-    setTag(tagInQuery);
+    setTag(decodeURI(tagInQuery));
   }, [tagInQuery]);
 
   useEffect(() => {
