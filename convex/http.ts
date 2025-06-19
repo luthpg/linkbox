@@ -24,8 +24,6 @@ http.route({
     const providedApiKey = authHeader.substring(7);
     const hashedProvidedApiKey = await sha256(providedApiKey);
 
-    // APIキーの検証とConvexユーザーIDの特定
-    // internalValidateApiKeyはConvexの_idを返すことを想定
     const userId = await ctx.runQuery(internal.apiKeys.internalValidateApiKey, {
       hashedApiKey: hashedProvidedApiKey,
     });
@@ -91,6 +89,54 @@ http.route({
         );
       }
       console.error('予期せぬエラー:', e);
+      return new Response('サーバー内部エラーが発生しました。', {
+        status: 500,
+        headers: new Headers({ 'Content-Type': 'text/plain' }),
+      });
+    }
+  }),
+});
+
+http.route({
+  path: '/api/tags',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        '認証情報が不足しています。Bearerトークンが必要です。',
+        {
+          status: 401,
+          headers: new Headers({ 'Content-Type': 'text/plain' }),
+        },
+      );
+    }
+    const providedApiKey = authHeader.substring(7);
+    const hashedProvidedApiKey = await sha256(providedApiKey);
+
+    const userId = await ctx.runQuery(internal.apiKeys.internalValidateApiKey, {
+      hashedApiKey: hashedProvidedApiKey,
+    });
+
+    if (!userId) {
+      return new Response('無効なAPIキーです。', {
+        status: 401,
+        headers: new Headers({ 'Content-Type': 'text/plain' }),
+      });
+    }
+
+    try {
+      const uniqueTags = await ctx.runQuery(
+        internal.bookmarks.getAllUniqueTagsForUser,
+        { userId: userId },
+      );
+
+      return new Response(JSON.stringify(uniqueTags), {
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      });
+    } catch (e) {
+      console.error('Error fetching unique tags:', e);
       return new Response('サーバー内部エラーが発生しました。', {
         status: 500,
         headers: new Headers({ 'Content-Type': 'text/plain' }),

@@ -20,6 +20,7 @@ import {
   Moon,
   Search,
   Settings2,
+  SparklesIcon,
   Sun,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -48,12 +49,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navData = {
     navMain: [
       {
-        title: '検索',
-        onClick: () => {
-          toast.info('検索機能は開発中ですね');
-        },
-        icon: Search,
+        title: 'linkbox',
+        url: '/',
+        icon: SparklesIcon,
       },
+      // {
+      //   title: '検索',
+      //   onClick: () => {
+      //     toast.info('検索機能は開発中ですね');
+      //   },
+      //   icon: Search,
+      // },
       {
         title: '全件表示',
         url: '/bookmarks/list',

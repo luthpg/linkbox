@@ -14,6 +14,7 @@ import {
   Bookmark,
   BookmarkCheck,
   BookmarkPlus,
+  HelpCircle,
   type LucideIcon,
   Settings,
 } from 'lucide-react';
@@ -50,6 +51,11 @@ export const PageMaster: Array<{
     path: /\/config.*/,
     title: '設定',
     icon: Settings,
+  },
+  {
+    path: '/help',
+    title: 'ヘルプ',
+    icon: HelpCircle,
   },
 ];
 

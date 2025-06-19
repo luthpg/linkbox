@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { SignIn, SignedIn } from '@clerk/nextjs';
 import { BookOpenTextIcon, KeyRoundIcon, SparklesIcon } from 'lucide-react';
 
 export default function Home() {
