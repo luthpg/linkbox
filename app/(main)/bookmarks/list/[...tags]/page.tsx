@@ -6,10 +6,10 @@ import type { Bookmark } from '@/types/bookmark';
 import { useQuery } from 'convex/react';
 import { useEffect, useState } from 'react';
 
-export default function BookmarksPage({
+export default function BookmarksWithTagPage({
   params,
 }: {
-  params: Promise<{ tags: string[] }>
+  params: Promise<{ tags: string[] }>;
 }) {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [tag, setTag] = useState<string | null>(null);
@@ -19,7 +19,7 @@ export default function BookmarksPage({
   useEffect(() => {
     const getTags = async () => {
       const { tags } = await params;
-      setTag(decodeURI(tags.join('/')))
+      setTag(decodeURI(tags.join('/')));
     };
     getTags();
   }, [params]);
