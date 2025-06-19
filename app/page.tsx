@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { BookOpenTextIcon, KeyRoundIcon, SparklesIcon } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -62,7 +63,8 @@ export default function Home() {
           <p className="text-center text-sm text-muted-foreground">
             &copy; 2025 linkbox. All rights reserved.
           </p>
-          利用規約 | プライバシーポリシー
+          <Link href="/terms">利用規約</Link> |{' '}
+          <Link href="/privacy">プライバシーポリシー</Link>
         </footer>
       </div>
     </>
