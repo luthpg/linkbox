@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'linkbox',
     short_name: 'linkbox',
     description: 'あなたのブックマークを次々に保存',
-    start_url: '/bookmarks/list',
+    start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#2b7fff',
