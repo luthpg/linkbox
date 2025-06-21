@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    new URL(targetUrl);
+    new URL(decodeURIComponent(targetUrl));
   } catch (e) {
     return NextResponse.json({ error: '無効なURL形式です。' }, { status: 400 });
   }
