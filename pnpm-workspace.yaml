@@ -2,4 +2,6 @@ onlyBuiltDependencies:
   - '@biomejs/biome'
   - '@clerk/shared'
   - '@sentry/cli'
+  - '@tailwindcss/oxide'
   - esbuild
+  - sharp

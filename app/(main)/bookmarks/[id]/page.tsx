@@ -17,8 +17,9 @@ import type { OGPData } from '@/types/ogp';
 import { useMutation, useQuery } from 'convex/react';
 import { ExternalLinkIcon } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 
 type EditBookmarkPageProps = {
   id: string;
@@ -41,56 +42,32 @@ export default function EditBookmarkPage() {
     { id: bookmarkId as Id<'bookmarks'> }, // stringをId<"bookmarks">にキャスト
   );
 
-  const [ogp, setOgp] = useState<OGPData | null>(null); // OGPデータを保存するための状態
-  const [isOgpLoading, setIsOgpLoading] = useState(false); // OGPデータのロード状態
   const [isSaving, setIsSaving] = useState(false); // ブックマーク保存中の状態
-  const [fetchError, setFetchError] = useState<string | null>(null); // OGPフェッチやConvexからのデータ取得エラー
 
   // ConvexのuseMutationフックを使ってブックマーク更新ミューテーションを呼び出し
   const updateBookmark = useMutation(api.bookmarks.updateBookmark);
 
-  // ブックマークデータがロードされたら、そのURLからOGPデータをフェッチします。
-  useEffect(() => {
-    // bookmarkがundefined (ロード中) または null (データなし/エラー)、
-    // あるいはURLがない場合はOGPフェッチをスキップ
-    if (bookmark === undefined || bookmark === null || !bookmark.url) {
-      setOgp(null);
-      setIsOgpLoading(false);
-      return;
-    }
-
-    const fetchOgp = async (url: string) => {
-      setIsOgpLoading(true);
-      setFetchError(null); // OGPフェッチエラーをリセット
+  const ogpFetcher = async ([api, url]: [string, string]) => {
+    const res = await fetch(`${api}?url=${encodeURIComponent(url)}`);
+    if (!res.ok) {
+      let errorMessage = `${res.status} ${res.statusText}`;
       try {
-        const ogpResponse = await fetch(
-          `/api/ogp?url=${encodeURIComponent(url)}`,
-        );
-        if (ogpResponse.ok) {
-          const ogpData: OGPData = await ogpResponse.json();
-          setOgp(ogpData);
-        } else {
-          const errorData = await ogpResponse.json();
-          const errorMessage =
-            errorData.error ||
-            `${ogpResponse.status} ${ogpResponse.statusText}`;
-          console.warn(`Failed to fetch OGP for ${url}: ${errorMessage}`);
-          setFetchError(`OGP情報の取得に失敗しました: ${errorMessage}`);
-          setOgp(null); // OGP情報が取得できなかった場合はクリア
-        }
-      } catch (ogpError) {
-        console.error(`Error fetching OGP for ${url}:`, ogpError);
-        setFetchError(
-          `OGP情報の取得中にエラーが発生しました: ${(ogpError as Error).message || '予期せぬエラー'}`,
-        );
-        setOgp(null);
-      } finally {
-        setIsOgpLoading(false);
-      }
-    };
+        const errorData = await res.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {}
+      throw new Error(`OGP情報の取得に失敗しました: ${errorMessage}`);
+    }
+    return res.json();
+  };
 
-    fetchOgp(bookmark.url);
-  }, [bookmark]); // bookmarkオブジェクトが変更されるたびにこのエフェクトが再実行されます
+  const {
+    data: ogp,
+    isLoading: isOgpLoading,
+    error: ogpError,
+  } = useSWR<OGPData>(
+    bookmark?.url ? ['/api/ogp', bookmark.url] : null,
+    ogpFetcher,
+  );
 
   /**
    * ブックマークの更新処理を実行します。
@@ -194,6 +171,23 @@ export default function EditBookmarkPage() {
   const displayImage = ogp?.ogImage;
   const displayUrl = bookmark.url ?? ogp?.ogUrl;
   const displaySiteName = ogp?.ogSiteName;
+
+  // ogpErrorがあればエラー表示
+  if (ogpError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] text-center p-4">
+        <h2 className="text-2xl font-bold text-red-500 mb-4">
+          エラーが発生しました。
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          {ogpError.message}
+        </p>
+        <Button onClick={() => router.push('/bookmarks/list')}>
+          ブックマーク一覧に戻る
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center p-4">

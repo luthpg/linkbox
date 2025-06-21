@@ -20,9 +20,11 @@ import {
   Moon,
   Search,
   Settings2,
+  SparklesIcon,
   Sun,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { random, search } from 'node-emoji';
 import type * as React from 'react';
 import { toast } from 'sonner';
 
@@ -34,21 +36,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const tags = [...new Set(bookmarks.flatMap((b) => b.tags))]
     .sort()
-    .map((tag) => ({
-      name: tag,
-      url: `/bookmarks/list/${tag}`,
-      emoji: '📌',
-    }));
+    .map((tag) => {
+      const lastTag = tag.split('/').pop();
+      const emoji = lastTag != null ? search(lastTag) : [];
+      return {
+        name: tag,
+        url: `/bookmarks/list/${tag}`,
+        emoji: (emoji.length ? emoji[0] : random()).emoji,
+      };
+    });
 
   const navData = {
     navMain: [
       {
-        title: '検索',
-        onClick: () => {
-          toast.info('検索機能は開発中ですね');
-        },
-        icon: Search,
+        title: 'linkbox',
+        url: '/',
+        icon: SparklesIcon,
       },
+      // {
+      //   title: '検索',
+      //   onClick: () => {
+      //     toast.info('検索機能は開発中ですね');
+      //   },
+      //   icon: Search,
+      // },
       {
         title: '全件表示',
         url: '/bookmarks/list',

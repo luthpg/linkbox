@@ -12,6 +12,28 @@ const notoSansJP = Noto_Sans_JP({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'linkbox',
   description: 'Your personal bookmark manager',
+  openGraph: {
+    type: 'website',
+    url: './',
+    title: 'linkbox',
+    description: 'Your personal bookmark manager',
+    siteName: 'linkbox',
+    images: './public/icon.png',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'linkbox',
+    description: 'Your personal bookmark manager',
+    images: './public/icon.png',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({

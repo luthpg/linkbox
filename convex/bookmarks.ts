@@ -2,7 +2,12 @@ import type { Bookmark } from '@/types/bookmark';
 import { v } from 'convex/values';
 import { internal } from './_generated/api'; // internal api をインポート
 import type { Id } from './_generated/dataModel';
-import { internalMutation, mutation, query } from './_generated/server';
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server';
 import { decodeHtmlEntities } from './lib/utils';
 
 /**
@@ -232,5 +237,32 @@ export const createBookmarkByApi = internalMutation({
       tags: tags.map((t) => decodeHtmlEntities(t)),
     });
     return newBookmarkId.toString();
+  },
+});
+
+/**
+ * 内部クエリ: 指定されたConvexユーザーIDに紐づく全てのブックマークから、
+ * ユニークなタグのリストを取得します。
+ * HTTPアクションから認証後に呼び出されることを想定しています。
+ */
+export const getAllUniqueTagsForUser = internalQuery({
+  args: {
+    userId: v.id('users'),
+  },
+  handler: async (ctx, { userId }) => {
+    const bookmarks = await ctx.db
+      .query('bookmarks')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .collect();
+
+    const uniqueTags = new Set<string>();
+    for (const bookmark of bookmarks) {
+      for (const tag of bookmark.tags) {
+        uniqueTags.add(tag);
+      }
+    }
+
+    // Setを配列に変換して返す
+    return Array.from(uniqueTags).sort();
   },
 });
