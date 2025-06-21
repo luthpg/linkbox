@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     title: 'linkbox',
     description: 'Your personal bookmark manager',
     siteName: 'linkbox',
-    images: './public/icon.png',
+    images: './icon.png',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'linkbox',
     description: 'Your personal bookmark manager',
-    images: './public/icon.png',
+    images: './icon.png',
   },
   viewport: {
     width: 'device-width',
