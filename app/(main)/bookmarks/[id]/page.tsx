@@ -14,7 +14,7 @@ import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import type { BookmarkFormData } from '@/types/bookmark';
 import type { OGPData } from '@/types/ogp';
-import { useMutation, useQuery } from 'convex/react';
+import { useAction, useMutation, useQuery } from 'convex/react';
 import { ExternalLinkIcon } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -37,27 +37,24 @@ export default function EditBookmarkPage() {
   // `bookmarkId` が有効なConvex IDの文字列でない場合、クエリを実行しません。
   // `bookmark` の値は、ロード中に `undefined`、データが見つからない/エラー時に `null`、
   // データが正常にロードされた場合は `Bookmark` 型となります。
-  const bookmark = useQuery(
-    api.bookmarks.getBookmark,
-    { id: bookmarkId as Id<'bookmarks'> }, // stringをId<"bookmarks">にキャスト
-  );
+  const bookmark = useQuery(api.bookmarks.getBookmark, {
+    id: bookmarkId as Id<'bookmarks'>,
+  });
 
-  const [isSaving, setIsSaving] = useState(false); // ブックマーク保存中の状態
+  const [isSaving, setIsSaving] = useState(false);
 
-  // ConvexのuseMutationフックを使ってブックマーク更新ミューテーションを呼び出し
   const updateBookmark = useMutation(api.bookmarks.updateBookmark);
 
+  const fetchOgpAction = useAction(api.ogp.fetchOgp);
+
   const ogpFetcher = async ([api, url]: [string, string]) => {
-    const res = await fetch(`${api}?url=${encodeURIComponent(url)}`);
-    if (!res.ok) {
-      let errorMessage = `${res.status} ${res.statusText}`;
-      try {
-        const errorData = await res.json();
-        errorMessage = errorData.error || errorMessage;
-      } catch {}
-      throw new Error(`OGP情報の取得に失敗しました: ${errorMessage}`);
+    try {
+      const res = await fetchOgpAction({ url });
+      return res;
+    } catch (error) {
+      console.error(`(${api}) Error fetching OGP data:`, error);
+      return {};
     }
-    return res.json();
   };
 
   const {
