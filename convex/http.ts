@@ -1,3 +1,4 @@
+import { getOgpInfo } from '@/lib/ogp';
 import { type Bookmark, BookmarkFormSchema } from '@/types/bookmark';
 import { httpRouter } from 'convex/server';
 import { ZodError } from 'zod';
@@ -6,6 +7,13 @@ import { httpAction } from './_generated/server';
 import { decodeHtmlEntities, sha256 } from './lib/utils';
 
 const http = httpRouter();
+
+interface BookmarkPayload {
+  url: string;
+  title: string;
+  memo?: string;
+  tags: string | string[];
+}
 
 http.route({
   path: '/api/bookmarks',
@@ -35,7 +43,7 @@ http.route({
       });
     }
 
-    let body: { args: Bookmark };
+    let body: { args: BookmarkPayload };
     try {
       body = await request.json();
     } catch (e) {
@@ -46,10 +54,38 @@ http.route({
     }
 
     try {
-      if (typeof body.args.tags === 'string') {
-        body.args.tags = (body.args.tags as string).split(',');
+      const response = await fetch(decodeURIComponent(body.args.url), {
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `Failed to fetch URL ${body.args.url}: ${response.status} ${response.statusText}`,
+        );
+        return new Response(
+          `URLのフェッチに失敗しました: ${response.statusText}`,
+          {
+            headers: new Headers({ 'Content-Type': 'text/plain' }),
+            status: response.status,
+          },
+        );
       }
-      const validatedData = BookmarkFormSchema.parse(body.args);
+
+      const html = await response.text();
+      const ogp = getOgpInfo(html);
+      body.args.title = ogp.ogTitle ?? body.args.title;
+      body.args.memo = ogp.ogDescription ?? body.args.memo;
+    } catch (e) {
+      console.warn(
+        `(OGP fetch error) Failed to fetch URL ${body.args.url}: ${(e as Error).message}`,
+      );
+    }
+
+    try {
+      if (typeof body.args.tags === 'string') {
+        body.args.tags = body.args.tags.split(',');
+      }
+      const validatedData = BookmarkFormSchema.parse(body.args as Bookmark);
 
       const memoToSave =
         validatedData.memo != null && validatedData.memo !== ''
