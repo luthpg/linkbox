@@ -9,10 +9,12 @@ export function LoginButton({ ...props }) {
 
   if (isLoading) return <p>Loading...</p>;
 
+  const fallbackUrl = '/bookmarks/list';
+
   if (isAuthenticated) {
     return (
       <Button
-        onClick={() => router.push('/bookmarks/list')}
+        onClick={() => router.push(fallbackUrl)}
         className="px-5 py-2.5 relative rounded group overflow-hidden font-medium bg-zinc-50 text-zinc-600 inline-block cursor-pointer"
         {...props}
       >
@@ -23,7 +25,12 @@ export function LoginButton({ ...props }) {
   }
 
   return (
-    <SignInButton mode="modal" fallbackRedirectUrl="/bookmarks/list" {...props}>
+    <SignInButton
+      mode="modal"
+      fallbackRedirectUrl={fallbackUrl}
+      signUpFallbackRedirectUrl={fallbackUrl}
+      {...props}
+    >
       <Button className="px-5 py-2.5 relative rounded group overflow-hidden font-medium bg-zinc-50 text-zinc-600 inline-block cursor-pointer">
         <span className="absolute top-0 left-0 flex w-full h-0 mb-0 transition-all duration-200 ease-out transform translate-y-0 bg-zinc-600 group-hover:h-full opacity-90" />
         <span className="relative group-hover:text-white">ログイン</span>
