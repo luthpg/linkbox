@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Noto_Sans_JP } from 'next/font/google';
 import '@/app/globals.css';
 import ConvexClientProvider from '@/components/custom/ConvexClientProvider';
@@ -9,6 +9,12 @@ import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansJP = Noto_Sans_JP({ subsets: ['latin'] });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'linkbox',
@@ -26,10 +32,6 @@ export const metadata: Metadata = {
     title: 'linkbox',
     description: 'Your personal bookmark manager',
     images: './icon.png',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
   },
   icons: {
     icon: '/favicon.ico',

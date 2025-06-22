@@ -3,7 +3,7 @@
 import {
   BookmarkCard,
   BookmarkSimpleCard,
-} from '@/components/custom/BookmarkCard'; // BookmarkSimpleCard も含めてインポート
+} from '@/components/custom/BookmarkCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,14 +31,13 @@ import type { Id } from '@/convex/_generated/dataModel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { Bookmark } from '@/types/bookmark';
 import type { OGPData } from '@/types/ogp';
-import { useMutation } from 'convex/react';
+import { useAction, useMutation } from 'convex/react';
 import { PlusIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-import useSWR, { SWRConfig } from 'swr';
+import useSWR from 'swr';
 
 interface BookmarkListClientProps {
   bookmarks: Bookmark[] | undefined | null;
@@ -55,6 +54,57 @@ const ogpFetcher = async ([key, url]: [string, string]) => {
   }
   return response.json();
 };
+
+const MemoizedBookmarkCard = memo(
+  ({
+    bookmark,
+    listType,
+    onEdit,
+    onDelete,
+  }: {
+    bookmark: Bookmark;
+    listType: 'rich' | 'simple';
+    onEdit: (id: string) => void;
+    onDelete: (id: Id<'bookmarks'>) => void;
+  }) => {
+    const fetchOgpAction = useAction(api.ogp.fetchOgp);
+
+    const ogpFetcher = async ([api, url]: [string, string]) => {
+      try {
+        const res = await fetchOgpAction({ url });
+        return res;
+      } catch (error) {
+        console.error(`(${api}) Error fetching OGP data:`, error);
+        return {};
+      }
+    };
+
+    const {
+      data: ogp,
+      error,
+      isLoading: isOgpLoading,
+    } = useSWR<OGPData, Error>(
+      bookmark.url ? ['ogp', bookmark.url] : null,
+      ogpFetcher,
+      { revalidateOnFocus: false, dedupingInterval: 600000 },
+    );
+
+    const displayOgp = error ? null : ogp;
+    const CardComponent =
+      listType === 'rich' ? BookmarkCard : BookmarkSimpleCard;
+
+    return (
+      <CardComponent
+        bookmark={bookmark}
+        ogp={displayOgp}
+        isOgpLoading={isOgpLoading}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
+  },
+);
+MemoizedBookmarkCard.displayName = 'MemoizedBookmarkCard';
 
 export function BookmarkListClient({
   bookmarks,
@@ -75,27 +125,26 @@ export function BookmarkListClient({
 
   const deleteBookmark = useMutation(api.bookmarks.deleteBookmark);
 
-  const handleEdit = (id: string) => {
-    router.push(`/bookmarks/${id}`);
-  };
+  const handleEdit = useCallback(
+    (id: string) => {
+      router.push(`/bookmarks/${id}`);
+    },
+    [router],
+  );
 
-  const handleDeleteClick = (id: Id<'bookmarks'>) => {
+  const handleDeleteClick = useCallback((id: Id<'bookmarks'>) => {
     setBookmarkToDelete(id);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     if (!bookmarkToDelete) return;
-
     setIsDeleting(true);
-    setShowDeleteConfirm(false);
-
     try {
       await deleteBookmark({ id: bookmarkToDelete });
       toast.success('ブックマークを削除しました', {
         description: '指定されたブックマークが正常に削除されました。',
       });
-      router.refresh();
     } catch (e) {
       console.error('Error deleting bookmark:', (e as Error).message);
       toast.error('ブックマークの削除中にエラーが発生しました。', {
@@ -103,14 +152,15 @@ export function BookmarkListClient({
       });
     } finally {
       setIsDeleting(false);
+      setShowDeleteConfirm(false);
       setBookmarkToDelete(null);
     }
-  };
+  }, [bookmarkToDelete, deleteBookmark]);
 
-  const cancelDelete = () => {
+  const cancelDelete = useCallback(() => {
     setShowDeleteConfirm(false);
     setBookmarkToDelete(null);
-  };
+  }, []);
 
   if (bookmarks === undefined) {
     return (
@@ -163,13 +213,20 @@ export function BookmarkListClient({
           <div className="ml-auto mr-3">
             <Select onValueChange={(value) => setListType(value as ListType)}>
               <SelectTrigger className="w-30">
-                <SelectValue placeholder="List View" />
+                <SelectValue placeholder="List View" defaultValue={listType} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>リストビュー</SelectLabel>
-                  <SelectItem value="rich">リッチ</SelectItem>
-                  <SelectItem value="simple">シンプル</SelectItem>
+                  <SelectItem value="rich" defaultChecked={listType === 'rich'}>
+                    リッチ
+                  </SelectItem>
+                  <SelectItem
+                    value="simple"
+                    defaultChecked={listType === 'simple'}
+                  >
+                    シンプル
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -183,28 +240,15 @@ export function BookmarkListClient({
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-          {/* SWRConfig で OGP フェッチのデフォルト設定を適用 */}
-          <SWRConfig value={{ fetcher: ogpFetcher }}>
-            {bookmarks.map((bookmark) =>
-              listType === 'rich' ? (
-                <BookmarkCardWithOgp
-                  key={bookmark.id}
-                  bookmark={bookmark}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                />
-              ) : listType === 'simple' ? (
-                <BookmarkSimpleCardWithOgp
-                  key={bookmark.id}
-                  bookmark={bookmark}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                />
-              ) : (
-                <span key={bookmark.id}>some error occured...</span>
-              ),
-            )}
-          </SWRConfig>
+          {bookmarks.map((bookmark) => (
+            <MemoizedBookmarkCard
+              key={bookmark.id}
+              bookmark={bookmark}
+              listType={listType}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
+            />
+          ))}
         </div>
       </div>
 
@@ -227,63 +271,5 @@ export function BookmarkListClient({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
-}
-
-function BookmarkCardWithOgp({
-  bookmark,
-  onEdit,
-  onDelete,
-}: {
-  bookmark: Bookmark;
-  onEdit: (id: string) => void;
-  onDelete: (id: Id<'bookmarks'>) => void;
-}) {
-  const {
-    data: ogp,
-    error,
-    isLoading: isOgpLoading,
-  } = useSWR<OGPData>(['/api/ogp', bookmark.url]);
-
-  const displayOgp = error ? null : ogp;
-
-  return (
-    <BookmarkCard
-      bookmark={bookmark}
-      ogp={displayOgp}
-      isOgpLoading={isOgpLoading}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
-  );
-}
-
-// BookmarkSimpleCardをラップしてOGPフェッチロジックを持つ新しいコンポーネント
-function BookmarkSimpleCardWithOgp({
-  bookmark,
-  onEdit,
-  onDelete,
-}: {
-  bookmark: Bookmark;
-  onEdit: (id: string) => void;
-  onDelete: (id: Id<'bookmarks'>) => void;
-}) {
-  const {
-    data: ogp,
-    error,
-    isLoading: isOgpLoading,
-  } = useSWR<OGPData>(['/api/ogp', bookmark.url]);
-
-  // エラーが発生した場合、またはデータがまだない場合はOGPデータを表示しない (nullとして渡す)
-  const displayOgp = error ? null : ogp;
-
-  return (
-    <BookmarkSimpleCard
-      bookmark={bookmark}
-      ogp={displayOgp}
-      isOgpLoading={isOgpLoading}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
   );
 }

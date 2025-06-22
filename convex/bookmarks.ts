@@ -89,6 +89,53 @@ export const getBookmark = query({
   },
 });
 
+export const getFilteredBookmarks = query({
+  args: {
+    tag: v.optional(v.string()),
+  },
+  handler: async (ctx, { tag }): Promise<Bookmark[] | null> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    const clerkUserId = identity.subject;
+
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) =>
+        q.eq('tokenIdentifier', clerkUserId),
+      )
+      .first();
+
+    if (!user) {
+      return [];
+    }
+
+    const bookmarksQuery = ctx.db
+      .query('bookmarks')
+      .withIndex('by_userId', (q) => q.eq('userId', user._id));
+
+    if (tag) {
+      const allBookmarks = await bookmarksQuery.order('desc').collect();
+      const filtered = allBookmarks.filter((b) => b.tags.includes(tag));
+      return filtered.map((b) => ({
+        ...b,
+        id: b._id.toString(),
+        user_id: b.userId.toString(),
+        created_at: new Date(b._creationTime).toISOString(),
+      }));
+    }
+
+    const bookmarks = await bookmarksQuery.order('desc').collect();
+    return bookmarks.map((b) => ({
+      ...b,
+      id: b._id.toString(),
+      user_id: b.userId.toString(),
+      created_at: new Date(b._creationTime).toISOString(),
+    }));
+  },
+});
+
 /**
  * 新しいブックマークを作成するミューテーション (GUIから呼び出し用)。
  */
