@@ -36,6 +36,8 @@ interface BookmarkFormProps {
   isLoading: boolean;
 }
 
+export const SYSTEM_TAG_WORDS = ['new', 'list'];
+
 /**
  * ブックマークの登録・編集用のフォームコンポーネント。
  * ZodスキーマとReact Hook Formを使用してバリデーションを行います。
@@ -87,6 +89,15 @@ export function BookmarkForm({
       e.preventDefault();
       const newTag = e.currentTarget.value.trim().toLowerCase();
       const currentTags = field.value || [];
+
+      if (SYSTEM_TAG_WORDS.includes(newTag)) {
+        form.setError('tags', {
+          message: '"new" と "list" は予約語のため、タグとして使用できません。',
+        });
+        e.currentTarget.value = '';
+        return;
+      }
+      form.clearErrors('tags');
 
       if (!currentTags.includes(newTag)) {
         field.onChange([...currentTags, newTag]);
