@@ -73,7 +73,22 @@ export default function MainLayout({
     }
   }, [isLoading, isAuthenticated]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div className="flex flex-1 flex-col gap-4 px-4 py-10">
+        <div className="text-center text-muted-foreground mb-4">
+          認証情報取得中...
+        </div>
+        {[...new Array(5)]
+          .map((_, index) => index.toString())
+          .map((index) => (
+            <Skeleton
+              key={`skeleton-loading-${index}`}
+              className="bg-muted/50 mx-auto h-24 w-full max-w-3xl rounded-xl"
+            />
+          ))}
+      </div>
+    );
 
   return (
     <SidebarProvider>
