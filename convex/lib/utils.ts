@@ -29,12 +29,12 @@ export async function sha256(text: string): Promise<string> {
  */
 export function decodeHtmlEntities(text: string): string {
   return text
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&#x2F;/g, '/')
     .replace(/&#x60;/g, '`')
-    .replace(/&#x3D;/g, '=');
+    .replace(/&#x3D;/g, '=')
+    .replace(/&amp;/g, '&');
 }
