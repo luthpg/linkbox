@@ -17,6 +17,6 @@
   },
   {
     "question": "APIキーはどのように使いますか？",
-    "answer": "APIキーは、外部のスクリプトやサービスからプログラムでブックマークを登録するために使用します。\nAPIキー管理ページ（`/api-keys`）で新しいキーを生成し、`Authorization: Bearer YOUR_API_KEY` ヘッダーと `POST /api/bookmarks` エンドポイントを使用してブックマークを登録できます。\nAPIトークンは生成時の1度しか表示されないのでご注意ください。"
+    "answer": "APIキーは、外部のスクリプトやサービスからプログラムでブックマークを登録するために使用します。\nAPIキー管理ページ（`/api-keys`）で新しいキーを生成し、`Authorization: Bearer YOUR_API_KEY` ヘッダーと `POST /api/bookmarks` エンドポイントを使用してブックマークを登録できます。\nまた、`GET /api/tags` エンドポイントでタグ一覧を取得することも可能です。\nAPIトークンは生成時の1度しか表示されないのでご注意ください。"
   }
 ]
