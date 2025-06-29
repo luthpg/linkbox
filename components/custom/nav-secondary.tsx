@@ -27,6 +27,13 @@ export function NavSecondary({
   items: SecondaryNavItem[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   const { isMobile, toggleSidebar } = useSidebar();
+  const computedExternalLinkOptions = (href: string) =>
+    href.startsWith('http')
+      ? {
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }
+      : {};
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
@@ -38,6 +45,7 @@ export function NavSecondary({
                   <Link
                     href={item.url}
                     onClick={() => isMobile && toggleSidebar()}
+                    {...computedExternalLinkOptions(item.url)}
                   >
                     <item.icon />
                     <span>{item.title}</span>

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { api } from '@/convex/_generated/api';
 import { useAuth } from '@clerk/nextjs';
+import { SiGithub } from '@icons-pack/react-simple-icons';
 import { useQuery } from 'convex/react';
 import {
   Home,
@@ -81,6 +82,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: 'ログアウト',
         onClick: async () => await signOut(),
         icon: LogOut,
+      },
+      {
+        title: 'リポジトリ',
+        url: 'https://github.com/luthpg/linkbox',
+        icon: SiGithub,
       },
       {
         title: 'ヘルプ',
