@@ -13,13 +13,13 @@ import {
 import { api } from '@/convex/_generated/api';
 import { useAuth } from '@clerk/nextjs';
 import { SiGithub } from '@icons-pack/react-simple-icons';
-import { useQuery } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import {
   Home,
   LogOut,
   MessageCircleQuestion,
   Moon,
-  Search,
+  // Search,
   Settings2,
   SparklesIcon,
   Sun,
@@ -27,7 +27,7 @@ import {
 import { useTheme } from 'next-themes';
 import { random, search } from 'node-emoji';
 import type * as React from 'react';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const bookmarks = useQuery(api.bookmarks.getBookmarks) ?? [];

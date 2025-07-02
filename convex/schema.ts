@@ -24,4 +24,13 @@ export default defineSchema({
     name: v.optional(v.string()),
     pictureUrl: v.optional(v.string()),
   }).index('by_tokenIdentifier', ['tokenIdentifier']),
+
+  sharedTags: defineTable({
+    userId: v.id('users'),
+    tagName: v.string(),
+    shareId: v.string(),
+    isPublic: v.boolean(),
+  })
+    .index('by_user_tag', ['userId', 'tagName'])
+    .index('by_shareId', ['shareId']),
 });

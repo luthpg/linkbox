@@ -22,6 +22,7 @@ interface BookmarkCardProps {
   isOgpLoading?: boolean;
   onEdit: (bookmarkId: string) => void;
   onDelete: (bookmarkId: Id<'bookmarks'>) => void;
+  isPublic?: boolean;
 }
 
 /**
@@ -33,6 +34,7 @@ interface BookmarkCardProps {
  * @param isOgpLoading OGPデータのロード中かどうか
  * @param onEdit 編集ボタンがクリックされたときに呼び出される関数
  * @param onDelete 削除ボタンがクリックされたときに呼び出される関数
+ * @param isPublic 公開ページかどうか
  */
 export function BookmarkCard({
   bookmark,
@@ -40,6 +42,7 @@ export function BookmarkCard({
   isOgpLoading,
   onEdit,
   onDelete,
+  isPublic,
 }: BookmarkCardProps) {
   const displayTitle = bookmark.title || ogp?.ogTitle || bookmark.url;
   const displayDescription = bookmark.memo || ogp?.ogDescription;
@@ -95,7 +98,7 @@ export function BookmarkCard({
         )}
       </CardHeader>
       <CardContent className="flex flex-col justify-end px-6 py-0">
-        {bookmark.tags && bookmark.tags.length > 0 && (
+        {bookmark.tags && bookmark.tags.length > 0 && !isPublic && (
           <div className="flex flex-wrap gap-2 mt-auto mb-4">
             {bookmark.tags.map((tag) => (
               <Badge key={tag} variant="secondary">
@@ -107,22 +110,26 @@ export function BookmarkCard({
           </div>
         )}
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onEdit(bookmark.id)}
-            aria-label="編集"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="destructive"
-            size="icon"
-            onClick={() => onDelete(bookmark.id as Id<'bookmarks'>)}
-            aria-label="削除"
-          >
-            <Trash2Icon className="h-4 w-4" />
-          </Button>
+          {!isPublic && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onEdit(bookmark.id)}
+              aria-label="編集"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </Button>
+          )}
+          {!isPublic && (
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={() => onDelete(bookmark.id as Id<'bookmarks'>)}
+              aria-label="削除"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -138,6 +145,7 @@ export function BookmarkCard({
  * @param isOgpLoading OGPデータのロード中かどうか
  * @param onEdit 編集ボタンがクリックされたときに呼び出される関数
  * @param onDelete 削除ボタンがクリックされたときに呼び出される関数
+ * @param isPublic 公開ページかどうか
  */
 export function BookmarkSimpleCard({
   bookmark,
@@ -145,6 +153,7 @@ export function BookmarkSimpleCard({
   isOgpLoading,
   onEdit,
   onDelete,
+  isPublic,
 }: BookmarkCardProps) {
   const displayTitle = bookmark.title || ogp?.ogTitle || bookmark.url;
   const displayDescription = bookmark.memo || ogp?.ogDescription;
@@ -192,24 +201,28 @@ export function BookmarkSimpleCard({
           )}
         </div>
         <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(bookmark.id)}
-            aria-label="編集"
-            className="h-6 w-6"
-          >
-            <PencilIcon className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(bookmark.id as Id<'bookmarks'>)}
-            aria-label="削除"
-            className="h-6 w-6 text-red-500 hover:text-red-600"
-          >
-            <Trash2Icon className="h-3 w-3" />
-          </Button>
+          {!isPublic && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit(bookmark.id)}
+              aria-label="編集"
+              className="h-6 w-6"
+            >
+              <PencilIcon className="h-3 w-3" />
+            </Button>
+          )}
+          {!isPublic && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(bookmark.id as Id<'bookmarks'>)}
+              aria-label="削除"
+              className="h-6 w-6 text-red-500 hover:text-red-600"
+            >
+              <Trash2Icon className="h-3 w-3" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

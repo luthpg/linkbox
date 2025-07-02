@@ -42,6 +42,7 @@ import useSWR from 'swr';
 interface BookmarkListClientProps {
   bookmarks: Bookmark[] | undefined | null;
   tag: string | null;
+  isPublic?: boolean;
 }
 
 type ListType = 'rich' | 'simple';
@@ -61,11 +62,13 @@ const MemoizedBookmarkCard = memo(
     listType,
     onEdit,
     onDelete,
+    isPublic,
   }: {
     bookmark: Bookmark;
     listType: 'rich' | 'simple';
     onEdit: (id: string) => void;
     onDelete: (id: Id<'bookmarks'>) => void;
+    isPublic?: boolean;
   }) => {
     const fetchOgpAction = useAction(api.ogp.fetchOgp);
 
@@ -100,6 +103,7 @@ const MemoizedBookmarkCard = memo(
         isOgpLoading={isOgpLoading}
         onEdit={onEdit}
         onDelete={onDelete}
+        isPublic={isPublic}
       />
     );
   },
@@ -109,6 +113,7 @@ MemoizedBookmarkCard.displayName = 'MemoizedBookmarkCard';
 export function BookmarkListClient({
   bookmarks,
   tag,
+  isPublic = false,
 }: BookmarkListClientProps) {
   const router = useRouter();
   const [listType, setListType] = useState<ListType>('rich');
@@ -193,12 +198,14 @@ export function BookmarkListClient({
         <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
           まだブックマークがありません。
         </p>
-        <Link href="/bookmarks/new">
-          <Button className="flex items-center gap-2">
-            <PlusIcon className="h-5 w-5" />
-            新しいブックマークを追加
-          </Button>
-        </Link>
+        {!isPublic && (
+          <Link href="/bookmarks/new">
+            <Button className="flex items-center gap-2">
+              <PlusIcon className="h-5 w-5" />
+              新しいブックマークを追加
+            </Button>
+          </Link>
+        )}
       </div>
     );
   }
@@ -231,12 +238,14 @@ export function BookmarkListClient({
               </SelectContent>
             </Select>
           </div>
-          <Link href="/bookmarks/new">
-            <Button className="flex items-center gap-2">
-              <PlusIcon className="h-5 w-5" />
-              {!isMobile && 'ブックマーク追加'}
-            </Button>
-          </Link>
+          {!isPublic && (
+            <Link href="/bookmarks/new">
+              <Button className="flex items-center gap-2">
+                <PlusIcon className="h-5 w-5" />
+                {!isMobile && 'ブックマーク追加'}
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
@@ -247,6 +256,7 @@ export function BookmarkListClient({
               listType={listType}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              isPublic={isPublic}
             />
           ))}
         </div>
