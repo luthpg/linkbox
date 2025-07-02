@@ -35,7 +35,7 @@ export default async function HelpPage() {
                 <AccordionTrigger className="text-lg font-semibold text-left px-4 py-0 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg transition-colors">
                   {qa.question}
                 </AccordionTrigger>
-                <AccordionContent className="p-4 pb-0 text-gray-700 dark:text-gray-300 leading-relaxed">
+                <AccordionContent className="p-4 pb-0 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                   {qa.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -46,7 +46,7 @@ export default async function HelpPage() {
               <AccordionTrigger className="text-lg font-semibold text-left px-4 py-0 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg transition-colors">
                 iPhone/iPadの「共有」メニューからブックマークを登録する方法はありますか？
               </AccordionTrigger>
-              <AccordionContent className="p-4 pb-0 text-gray-700 dark:text-gray-300 leading-relaxed">
+              <AccordionContent className="p-4 pb-0 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                 はい、iOSの「ショートカット」機能を利用して登録することができます。
                 <br />
                 <Link

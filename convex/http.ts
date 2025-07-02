@@ -1,6 +1,8 @@
 import { getOgpInfo } from '@/lib/ogp';
 import { type Bookmark, BookmarkFormSchema } from '@/types/bookmark';
+import type { WebhookEvent } from '@clerk/nextjs/server';
 import { httpRouter } from 'convex/server';
+import { Webhook } from 'svix';
 import { ZodError } from 'zod';
 import { internal } from './_generated/api';
 import { httpAction } from './_generated/server';
@@ -178,6 +180,56 @@ http.route({
         headers: new Headers({ 'Content-Type': 'text/plain' }),
       });
     }
+  }),
+});
+
+async function validateRequest(
+  req: Request,
+): Promise<WebhookEvent | undefined> {
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('CLERK_WEBHOOK_SECRET is not set');
+  }
+
+  const payloadString = await req.text();
+  const svixHeaders = {
+    'svix-id': req.headers.get('svix-id') ?? '',
+    'svix-timestamp': req.headers.get('svix-timestamp') ?? '',
+    'svix-signature': req.headers.get('svix-signature') ?? '',
+  };
+
+  const wh = new Webhook(webhookSecret);
+  try {
+    const event = wh.verify(payloadString, svixHeaders) as WebhookEvent;
+    return event;
+  } catch (error) {
+    console.error('Error verifying webhook:', error);
+    return undefined;
+  }
+}
+
+http.route({
+  path: '/api/clerk-webhook',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    const event = await validateRequest(request);
+    if (!event) {
+      return new Response('Could not validate request', { status: 400 });
+    }
+
+    if (event.type === 'user.deleted') {
+      const clerkUserId = event.data.id;
+      if (!clerkUserId) {
+        return new Response('Clerk User ID not found in webhook payload', {
+          status: 400,
+        });
+      }
+      await ctx.runMutation(internal.users.deleteUserAndData, {
+        clerkUserId,
+      });
+    }
+
+    return new Response(null, { status: 200 });
   }),
 });
 
