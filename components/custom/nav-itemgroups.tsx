@@ -1,14 +1,6 @@
 'use client';
 
 import {
-  ArrowUpRight,
-  Link as LinkIcon,
-  MoreHorizontal,
-  StarOff,
-  Trash2,
-} from 'lucide-react';
-
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -24,14 +16,73 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { api } from '@/convex/_generated/api';
 import { copyUrl } from '@/lib/utils';
+import { useMutation, useQuery } from 'convex/react';
+import {
+  EyeOffIcon,
+  Link as LinkIcon,
+  MoreHorizontal,
+  Share2Icon,
+} from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export type ItemGroup = {
   name: string;
   url: string;
   emoji: string;
 };
+
+function DropdownMenuItems({
+  item,
+}: {
+  item: ItemGroup;
+}) {
+  const isShared = useQuery(api.tags.isTagShared, { tagName: item.name });
+  const shareTag = useMutation(api.tags.shareTag);
+  const unshareTag = useMutation(api.tags.unshareTag);
+
+  const handleShare = async (tagName: string) => {
+    try {
+      const shareId = await shareTag({ tagName });
+      const shareUrl = `${window.location.origin}/public/${shareId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('共有リンクをコピーしました！', {
+        description: `タグ「${tagName}」のブックマークが共有できます。`,
+      });
+    } catch (error) {
+      toast.error('共有に失敗しました。');
+    }
+  };
+
+  const handleUnshare = async (tagName: string) => {
+    try {
+      await unshareTag({ tagName });
+      toast.success('共有を解除しました。');
+    } catch (error) {
+      toast.error('共有解除に失敗しました。');
+    }
+  };
+
+  return (
+    <>
+      <DropdownMenuItem onClick={async () => await handleShare(item.name)}>
+        <Share2Icon className="text-muted-foreground" />
+        <span>{isShared ? 'タグ共有用URLをコピー' : 'タグを共有'}</span>
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={async () => await handleUnshare(item.name)}>
+        <EyeOffIcon className="text-muted-foreground" />
+        <span>タグの共有を解除</span>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={async () => await copyUrl(item.url)}>
+        <LinkIcon className="text-muted-foreground" />
+        <span>個人用タグURLをコピー</span>
+      </DropdownMenuItem>
+    </>
+  );
+}
 
 export function NavItemGroups({
   itemGroups,
@@ -68,10 +119,7 @@ export function NavItemGroups({
                 side={isMobile ? 'bottom' : 'right'}
                 align={isMobile ? 'end' : 'start'}
               >
-                <DropdownMenuItem onClick={async () => await copyUrl(item.url)}>
-                  <LinkIcon className="text-muted-foreground" />
-                  <span>URLをコピー</span>
-                </DropdownMenuItem>
+                <DropdownMenuItems item={item} />
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

@@ -18,6 +18,7 @@ import type * as bookmarks from "../bookmarks.js";
 import type * as http from "../http.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as ogp from "../ogp.js";
+import type * as tags from "../tags.js";
 import type * as users from "../users.js";
 
 /**
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/utils": typeof lib_utils;
   ogp: typeof ogp;
+  tags: typeof tags;
   users: typeof users;
 }>;
 export declare const api: FilterApi<
