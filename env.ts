@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     CONVEX_DEPLOYMENT: z.string().min(1),
     CLERK_SECRET_KEY: z.string().min(1),
+    CLERK_WEBHOOK_SECRET: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_CONVEX_URL: z.string().url().min(1),

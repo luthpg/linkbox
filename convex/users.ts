@@ -91,3 +91,40 @@ export const updateUserProfile = mutation({
     });
   },
 });
+
+export const deleteUserAndData = internalMutation({
+  args: { clerkUserId: v.string() },
+  handler: async (ctx, { clerkUserId }) => {
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) =>
+        q.eq('tokenIdentifier', clerkUserId),
+      )
+      .first();
+
+    if (!user) {
+      console.warn(`User with Clerk ID ${clerkUserId} not found for deletion.`);
+      return;
+    }
+
+    const convexUserId = user._id;
+
+    const bookmarks = await ctx.db
+      .query('bookmarks')
+      .withIndex('by_userId', (q) => q.eq('userId', convexUserId))
+      .collect();
+    await Promise.all(bookmarks.map((bookmark) => ctx.db.delete(bookmark._id)));
+
+    const apiKeys = await ctx.db
+      .query('apiKeys')
+      .withIndex('by_userId', (q) => q.eq('userId', convexUserId))
+      .collect();
+    await Promise.all(apiKeys.map((key) => ctx.db.delete(key._id)));
+
+    await ctx.db.delete(convexUserId);
+
+    console.log(
+      `Successfully deleted user ${convexUserId} and all associated data.`,
+    );
+  },
+});
