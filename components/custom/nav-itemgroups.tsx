@@ -52,7 +52,10 @@ function DropdownMenuItems({
         description: `タグ「${tagName}」のブックマークが共有できます。`,
       });
     } catch (error) {
-      toast.error('共有に失敗しました。');
+      console.error('Error sharing tag:', error);
+      toast.error('共有に失敗しました。', {
+        description: `Error: ${(error as Error).message || '予期せぬエラー'}`,
+      });
     }
   };
 
