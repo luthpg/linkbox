@@ -92,8 +92,9 @@ export const getBookmark = query({
 export const getFilteredBookmarks = query({
   args: {
     tag: v.optional(v.string()),
+    keyword: v.optional(v.string()),
   },
-  handler: async (ctx, { tag }): Promise<Bookmark[] | null> => {
+  handler: async (ctx, { tag, keyword }): Promise<Bookmark[] | null> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return null;
@@ -115,19 +116,20 @@ export const getFilteredBookmarks = query({
       .query('bookmarks')
       .withIndex('by_userId', (q) => q.eq('userId', user._id));
 
+    const allBookmarks = await bookmarksQuery.order('desc').collect();
+    let filtered = allBookmarks;
     if (tag) {
-      const allBookmarks = await bookmarksQuery.order('desc').collect();
-      const filtered = allBookmarks.filter((b) => b.tags.includes(tag));
-      return filtered.map((b) => ({
-        ...b,
-        id: b._id.toString(),
-        user_id: b.userId.toString(),
-        created_at: new Date(b._creationTime).toISOString(),
-      }));
+      filtered = filtered.filter((b) => b.tags.includes(tag));
     }
-
-    const bookmarks = await bookmarksQuery.order('desc').collect();
-    return bookmarks.map((b) => ({
+    if (keyword) {
+      const lowerKeyword = keyword.toLowerCase();
+      filtered = filtered.filter(
+        (b) =>
+          b.title?.toLowerCase().includes(lowerKeyword) ||
+          b.memo?.toLowerCase().includes(lowerKeyword),
+      );
+    }
+    return filtered.map((b) => ({
       ...b,
       id: b._id.toString(),
       user_id: b.userId.toString(),

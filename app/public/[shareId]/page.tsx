@@ -26,7 +26,7 @@ export default function SharedBookmarkPage() {
         {data.ownerName || '匿名ユーザー'} さんによって共有されています。
       </p>
 
-      <BookmarkListClient bookmarks={data.bookmarks} tag={data.tagName} isPublic />
+      <BookmarkListClient tag={data.tagName} isPublic />
     </div>
   );
 }

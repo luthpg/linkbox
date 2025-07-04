@@ -153,3 +153,33 @@ export const getPublicBookmarksByShareId = query({
     };
   },
 });
+
+export const getMyAllTags = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) =>
+        q.eq('tokenIdentifier', identity.subject),
+      )
+      .first();
+    if (!user) return [];
+
+    const bookmarks = await ctx.db
+      .query('bookmarks')
+      .withIndex('by_userId', (q) => q.eq('userId', user._id))
+      .collect();
+
+    const tagSet = new Set<string>();
+    for (const b of bookmarks) {
+      if (Array.isArray(b.tags)) {
+        for (const t of b.tags) {
+          tagSet.add(t);
+        }
+      }
+    }
+    return Array.from(tagSet).sort();
+  },
+});
