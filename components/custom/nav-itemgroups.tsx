@@ -47,7 +47,8 @@ function DropdownMenuItems({
     try {
       await writeClipboardSync(async () => {
         const shareId = await shareTag({ tagName });
-        return `/public/${shareId}`;
+        const { origin } = new URL(window.location.href);
+        return `${origin}/public/${shareId}`;
       });
       toast.success('共有リンクをコピーしました！', {
         description: `タグ「${tagName}」のブックマークが共有できます。`,
