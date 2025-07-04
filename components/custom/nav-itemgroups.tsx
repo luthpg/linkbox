@@ -46,16 +46,14 @@ function DropdownMenuItems({
   const handleShare = async (tagName: string) => {
     try {
       const shareId = await shareTag({ tagName });
-      const shareUrl = `${window.location.origin}/public/${shareId}`;
+      const { origin } = new URL(window.location.href);
+      const shareUrl = `${origin}/public/${shareId}`;
       await navigator.clipboard.writeText(shareUrl);
       toast.success('共有リンクをコピーしました！', {
         description: `タグ「${tagName}」のブックマークが共有できます。`,
       });
     } catch (error) {
-      console.error('Error sharing tag:', error);
-      toast.error('共有に失敗しました。', {
-        description: `Error: ${(error as Error).message || '予期せぬエラー'}`,
-      });
+      toast.error('共有に失敗しました。');
     }
   };
 
