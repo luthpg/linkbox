@@ -46,9 +46,7 @@ function DropdownMenuItems({
   const handleShare = async (tagName: string) => {
     try {
       const shareId = await shareTag({ tagName });
-      const { origin } = new URL(window.location.href);
-      const shareUrl = `${origin}/public/${shareId}`;
-      await navigator.clipboard.writeText(shareUrl);
+      await copyUrl(`/public/${shareId}`);
       toast.success('共有リンクをコピーしました！', {
         description: `タグ「${tagName}」のブックマークが共有できます。`,
       });
