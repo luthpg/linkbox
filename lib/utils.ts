@@ -7,9 +7,23 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * コピーするURLを作成し、クリップボードにコピーします
- * @param text コピーするURL（相対URL）
+ * @param text コピーするURL
  */
 export async function copyUrl(text: string) {
-  const url = new URL(window.location.href);
-  await navigator.clipboard.writeText(`${url.origin}${text}`);
+  const { origin } = new URL(window.location.href);
+  const target = text.startsWith('/') ? `${origin}${text}` : text;
+  await navigator.clipboard.writeText(target);
+}
+
+export async function writeClipboardSync(callback: () => Promise<string>) {
+  if (typeof ClipboardItem && navigator.clipboard.write) {
+    const text = new ClipboardItem({
+      'text/plain': callback().then(
+        (text) => new Blob([text], { type: 'text/plain' }),
+      ),
+    });
+    navigator.clipboard.write([text]);
+  } else {
+    callback().then((text) => navigator.clipboard.writeText(text));
+  }
 }

@@ -17,7 +17,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { api } from '@/convex/_generated/api';
-import { copyUrl } from '@/lib/utils';
+import { copyUrl, writeClipboardSync } from '@/lib/utils';
 import { useMutation, useQuery } from 'convex/react';
 import {
   EyeOffIcon,
@@ -45,9 +45,11 @@ function DropdownMenuItems({
 
   const handleShare = async (tagName: string) => {
     try {
-      const shareId = await shareTag({ tagName });
-      const shareUrl = `${window.location.origin}/public/${shareId}`;
-      await navigator.clipboard.writeText(shareUrl);
+      await writeClipboardSync(async () => {
+        const shareId = await shareTag({ tagName });
+        const { origin } = new URL(window.location.href);
+        return `${origin}/public/${shareId}`;
+      });
       toast.success('共有リンクをコピーしました！', {
         description: `タグ「${tagName}」のブックマークが共有できます。`,
       });
@@ -65,6 +67,15 @@ function DropdownMenuItems({
     }
   };
 
+  const handleCopyInternalLink = async (url: string) => {
+    try {
+      await copyUrl(url);
+      toast.success('個人用タグURLをコピーしました！');
+    } catch (error) {
+      toast.error('コピーに失敗しました。');
+    }
+  }
+
   return (
     <>
       <DropdownMenuItem onClick={async () => await handleShare(item.name)}>
@@ -76,7 +87,7 @@ function DropdownMenuItems({
         <span>タグの共有を解除</span>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={async () => await copyUrl(item.url)}>
+      <DropdownMenuItem onClick={async () => await handleCopyInternalLink(item.url)}>
         <LinkIcon className="text-muted-foreground" />
         <span>個人用タグURLをコピー</span>
       </DropdownMenuItem>
