@@ -17,7 +17,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { api } from '@/convex/_generated/api';
-import { copyUrl } from '@/lib/utils';
+import { copyUrl, writeClipboardSync } from '@/lib/utils';
 import { useMutation, useQuery } from 'convex/react';
 import {
   EyeOffIcon,
@@ -45,8 +45,10 @@ function DropdownMenuItems({
 
   const handleShare = async (tagName: string) => {
     try {
-      const shareId = await shareTag({ tagName });
-      await copyUrl(`/public/${shareId}`);
+      await writeClipboardSync(async () => {
+        const shareId = await shareTag({ tagName });
+        return `/public/${shareId}`;
+      });
       toast.success('共有リンクをコピーしました！', {
         description: `タグ「${tagName}」のブックマークが共有できます。`,
       });
