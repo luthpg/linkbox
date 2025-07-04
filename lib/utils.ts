@@ -12,9 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 export async function copyUrl(text: string) {
   const { origin } = new URL(window.location.href);
   const target = text.startsWith('/') ? `${origin}${text}` : text;
-  try {
-    await navigator.clipboard.writeText(target);
-  } catch (e) {
+  navigator.clipboard.writeText(target).catch((e) => {
     console.error(e);
     const textarea = document.createElement('textarea');
     textarea.value = target;
@@ -31,5 +29,5 @@ export async function copyUrl(text: string) {
     } finally {
       document.body.removeChild(textarea);
     }
-  }
+  });
 }
