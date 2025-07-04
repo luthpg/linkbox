@@ -74,7 +74,7 @@ function DropdownMenuItems({
     } catch (error) {
       toast.error('コピーに失敗しました。');
     }
-  }
+  };
 
   return (
     <>
@@ -87,7 +87,9 @@ function DropdownMenuItems({
         <span>タグの共有を解除</span>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={async () => await handleCopyInternalLink(item.url)}>
+      <DropdownMenuItem
+        onClick={async () => await handleCopyInternalLink(item.url)}
+      >
         <LinkIcon className="text-muted-foreground" />
         <span>個人用タグURLをコピー</span>
       </DropdownMenuItem>

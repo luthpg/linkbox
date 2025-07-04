@@ -35,17 +35,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
 
-  const tags = [...new Set(bookmarks.flatMap((b) => b.tags))]
-    .sort()
-    .map((tag) => {
-      const lastTag = tag.split('/').pop();
-      const emoji = lastTag != null ? search(lastTag) : [];
-      return {
-        name: tag,
-        url: `/bookmarks/list/${tag}`,
-        emoji: (emoji.length ? emoji[0] : random()).emoji,
-      };
-    });
+  const tagsQuery = useQuery(api.tags.getMyAllTags) || [];
+  const tags = tagsQuery.sort().map((tag) => {
+    const lastTag = tag.split('/').pop();
+    const emoji = lastTag != null ? search(lastTag) : [];
+    return {
+      name: tag,
+      url: `/bookmarks/list/${tag}`,
+      emoji: (emoji.length ? emoji[0] : random()).emoji,
+    };
+  });
 
   const navData = {
     navMain: [
