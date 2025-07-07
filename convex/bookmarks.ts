@@ -289,6 +289,43 @@ export const createBookmarkByApi = internalMutation({
   },
 });
 
+export const updateBookmarkByApi = internalMutation({
+  args: {
+    id: v.id('bookmarks'),
+    url: v.string(),
+    title: v.string(),
+    memo: v.optional(v.string()),
+    tags: v.array(v.string()),
+  },
+  handler: async (ctx, { id, url, title, memo, tags }) => {
+    await ctx.db.patch(id, {
+      url,
+      title: decodeHtmlEntities(title),
+      memo: memo != null ? decodeHtmlEntities(memo) : memo,
+      tags: tags.map((t) => decodeHtmlEntities(t)),
+    });
+  },
+});
+
+export const getBookmarksByApi = internalQuery({
+  args: { userId: v.id('users') },
+  handler: async (ctx, { userId }): Promise<Bookmark[]> => {
+    const bookmarks = await ctx.db
+      .query('bookmarks')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .collect();
+    return bookmarks.map((b) => ({
+      id: b._id.toString(),
+      url: b.url,
+      title: b.title,
+      memo: b.memo,
+      tags: b.tags,
+      created_at: new Date(b._creationTime).toISOString(),
+      user_id: b.userId.toString(),
+    }));
+  },
+});
+
 /**
  * 内部クエリ: 指定されたConvexユーザーIDに紐づく全てのブックマークから、
  * ユニークなタグのリストを取得します。
