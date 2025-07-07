@@ -1,12 +1,14 @@
+import { internal } from '@/convex/_generated/api';
+import type { Id } from '@/convex/_generated/dataModel';
+import { httpAction } from '@/convex/_generated/server';
+import { decodeHtmlEntities, sha256 } from '@/convex/lib/utils';
 import { getOgpInfo } from '@/lib/ogp';
 import { type Bookmark, BookmarkFormSchema } from '@/types/bookmark';
+import type { ScraperState } from '@/types/tabelog';
 import type { WebhookEvent } from '@clerk/nextjs/server';
 import { httpRouter } from 'convex/server';
 import { Webhook } from 'svix';
 import { ZodError } from 'zod';
-import { internal } from './_generated/api';
-import { httpAction } from './_generated/server';
-import { decodeHtmlEntities, sha256 } from './lib/utils';
 
 const http = httpRouter();
 
@@ -127,6 +129,117 @@ http.route({
         );
       }
       console.error('予期せぬエラー:', e);
+      return new Response('サーバー内部エラーが発生しました。', {
+        status: 500,
+        headers: new Headers({ 'Content-Type': 'text/plain' }),
+      });
+    }
+  }),
+});
+
+http.route({
+  path: '/api/tabelog',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        '認証情報が不足しています。Bearerトークンが必要です。',
+        {
+          status: 401,
+          headers: new Headers({ 'Content-Type': 'text/plain' }),
+        },
+      );
+    }
+    const providedApiKey = authHeader.substring(7);
+    const hashedProvidedApiKey = await sha256(providedApiKey);
+
+    const userId = await ctx.runQuery(internal.apiKeys.internalValidateApiKey, {
+      hashedApiKey: hashedProvidedApiKey,
+    });
+
+    if (!userId) {
+      return new Response('無効なAPIキーです。', {
+        status: 401,
+        headers: new Headers({ 'Content-Type': 'text/plain' }),
+      });
+    }
+
+    let body: ScraperState;
+
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response('無効なJSONボディです。', {
+        status: 400,
+        headers: new Headers({ 'Content-Type': 'text/plain' }),
+      });
+    }
+
+    try {
+      const bookmarks = await ctx.runQuery(internal.bookmarks.getBookmarksByApi, { userId });
+      const bookmarkIds = await Promise.all(
+        body.data.map(async ({ name, url, area, genre, rate }) => {
+          let bookmarkId: string | null;
+          bookmarkId = bookmarks.find((b) => b.url === url)?.id ?? null;
+
+          if (body.withUpdate && bookmarkId != null) {
+            bookmarkId = await ctx.runMutation(
+              internal.bookmarks.updateBookmarkByApi,
+              {
+                id: bookmarkId as Id<'bookmarks'>,
+                url: url,
+                title: name,
+                tags: [
+                  ...(area ?? []).map((a) => `食べログ/${a}`),
+                  ...(genre ?? []).map((g) => `食べログ/${g}`),
+                ],
+                memo: `食べログ評価：${rate}`,
+              },
+            );
+            return bookmarkId;
+          }
+          if (bookmarkId == null) {
+            bookmarkId = await ctx.runMutation(
+              internal.bookmarks.createBookmarkByApi,
+              {
+                userId: userId,
+                url: url,
+                title: name,
+                tags: [
+                  ...(area ?? []).map((a) => `食べログ/${a}`),
+                  ...(genre ?? []).map((g) => `食べログ/${g}`),
+                ],
+                memo: `食べログ評価：${rate}`,
+              },
+            );
+          }
+          return bookmarkId;
+        }),
+      );
+
+      return new Response(
+        JSON.stringify({
+          ids: bookmarkIds,
+          message: 'Bookmark created/updated successfully',
+        }),
+        {
+          status: 201,
+          headers: new Headers({ 'Content-Type': 'application/json' }),
+        },
+      );
+    } catch (e) {
+      if (e instanceof ZodError) {
+        console.error('バリデーションエラー:', e.errors);
+        return new Response(
+          JSON.stringify({ error: 'バリデーションエラー', details: e.errors }),
+          {
+            status: 400,
+            headers: new Headers({ 'Content-Type': 'application/json' }),
+          },
+        );
+      }
+      console.error('予期せぬエラー:', (e as Error).message);
       return new Response('サーバー内部エラーが発生しました。', {
         status: 500,
         headers: new Headers({ 'Content-Type': 'text/plain' }),
