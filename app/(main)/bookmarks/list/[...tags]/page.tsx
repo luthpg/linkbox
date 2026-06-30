@@ -1,7 +1,7 @@
 'use client';
 
-import { BookmarkListClient } from '@/components/custom/BookmarkListClient';
 import { useEffect, useState } from 'react';
+import { BookmarkListClient } from '@/components/custom/BookmarkListClient';
 
 export default function BookmarksWithTagPage({
   params,

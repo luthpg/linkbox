@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { SignInButton } from '@clerk/nextjs';
 import { useConvexAuth } from 'convex/react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 export function LoginButton({ ...props }) {
   const router = useRouter();

@@ -1,12 +1,12 @@
 'use client';
 
-import { BookmarkForm } from '@/components/custom/BookmarkForm';
-import { api } from '@/convex/_generated/api';
-import type { BookmarkFormData } from '@/types/bookmark';
 import { useMutation } from 'convex/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { BookmarkForm } from '@/components/custom/BookmarkForm';
+import { api } from '@/convex/_generated/api';
+import type { BookmarkFormData } from '@/types/bookmark';
 
 export default function NewBookmarkPage() {
   const router = useRouter();

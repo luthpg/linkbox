@@ -1,6 +1,6 @@
-import type { Bookmark } from '@/types/bookmark';
 import { v } from 'convex/values';
 import { customAlphabet } from 'nanoid';
+import type { Bookmark } from '@/types/bookmark';
 import { mutation, query } from './_generated/server';
 
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12);
@@ -124,7 +124,7 @@ export const getPublicBookmarksByShareId = query({
       .withIndex('by_shareId', (q) => q.eq('shareId', shareId))
       .first();
 
-    if (!shareInfo || !shareInfo.isPublic) {
+    if (!shareInfo?.isPublic) {
       return null;
     }
 

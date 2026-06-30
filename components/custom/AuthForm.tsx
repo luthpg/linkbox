@@ -1,5 +1,6 @@
 'use client';
 
+import { SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { SiGoogle } from '@icons-pack/react-simple-icons';
 
 interface AuthFormProps {
   type: 'login' | 'signup';

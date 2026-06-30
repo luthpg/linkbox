@@ -1,5 +1,14 @@
 'use client';
 
+import { useMutation, useQuery } from 'convex/react';
+import {
+  EyeOffIcon,
+  Link as LinkIcon,
+  MoreHorizontal,
+  Share2Icon,
+} from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,15 +27,6 @@ import {
 } from '@/components/ui/sidebar';
 import { api } from '@/convex/_generated/api';
 import { copyUrl, writeClipboardSync } from '@/lib/utils';
-import { useMutation, useQuery } from 'convex/react';
-import {
-  EyeOffIcon,
-  Link as LinkIcon,
-  MoreHorizontal,
-  Share2Icon,
-} from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
 
 export type ItemGroup = {
   name: string;
@@ -34,11 +34,7 @@ export type ItemGroup = {
   emoji: string;
 };
 
-function DropdownMenuItems({
-  item,
-}: {
-  item: ItemGroup;
-}) {
+function DropdownMenuItems({ item }: { item: ItemGroup }) {
   const isShared = useQuery(api.tags.isTagShared, { tagName: item.name });
   const shareTag = useMutation(api.tags.shareTag);
   const unshareTag = useMutation(api.tags.unshareTag);
@@ -53,7 +49,7 @@ function DropdownMenuItems({
       toast.success('共有リンクをコピーしました！', {
         description: `タグ「${tagName}」のブックマークが共有できます。`,
       });
-    } catch (error) {
+    } catch (_error) {
       toast.error('共有に失敗しました。');
     }
   };
@@ -62,7 +58,7 @@ function DropdownMenuItems({
     try {
       await unshareTag({ tagName });
       toast.success('共有を解除しました。');
-    } catch (error) {
+    } catch (_error) {
       toast.error('共有解除に失敗しました。');
     }
   };
@@ -71,7 +67,7 @@ function DropdownMenuItems({
     try {
       await copyUrl(url);
       toast.success('個人用タグURLをコピーしました！');
-    } catch (error) {
+    } catch (_error) {
       toast.error('コピーに失敗しました。');
     }
   };
@@ -97,11 +93,7 @@ function DropdownMenuItems({
   );
 }
 
-export function NavItemGroups({
-  itemGroups,
-}: {
-  itemGroups: ItemGroup[];
-}) {
+export function NavItemGroups({ itemGroups }: { itemGroups: ItemGroup[] }) {
   const { isMobile, toggleSidebar } = useSidebar();
 
   return (

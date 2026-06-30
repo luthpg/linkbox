@@ -1,14 +1,5 @@
 'use client';
 
-import { AuthNavButton } from '@/components/custom/AuthNavButton';
-import { AppSidebar } from '@/components/custom/app-sidebar';
-import { Separator } from '@/components/ui/separator';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useConvexAuth } from 'convex/react';
 import {
   Bookmark,
@@ -21,6 +12,15 @@ import {
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { AuthNavButton } from '@/components/custom/AuthNavButton';
+import { AppSidebar } from '@/components/custom/app-sidebar';
+import { Separator } from '@/components/ui/separator';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const PageMaster: Array<{
   path: string | RegExp;

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import qaData from '@/app/(main)/help/qa-data.json';
 import {
   Accordion,
@@ -7,7 +8,6 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { QuestionAnswer } from '@/types/qa';
-import Link from 'next/link';
 
 export default async function HelpPage() {
   const typedQaData: QuestionAnswer[] = qaData as QuestionAnswer[];

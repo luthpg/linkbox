@@ -1,5 +1,10 @@
 'use client';
 
+import { useMutation, useQuery } from 'convex/react';
+import { CopyIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { z } from 'zod';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,18 +26,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { useMutation, useQuery } from 'convex/react';
-import { CopyIcon, PlusIcon, Trash2Icon } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { z } from 'zod';
 
 const ApiKeyNameSchema = z
   .string()
   .max(50, { message: 'キー名は50文字以内で入力してください。' })
   .nullable();
 
-const maskApiKey = (key: string) => {
+const _maskApiKey = (key: string) => {
   if (key.length < 10) return key;
   return `${key.substring(0, 7)}...${key.substring(key.length - 4)}`;
 };
@@ -85,7 +85,7 @@ export default function ConfigPage() {
       keyNameInput.trim() || null,
     );
     if (!validationResult.success) {
-      setKeyNameError(validationResult.error.errors[0].message);
+      setKeyNameError(validationResult.error.message);
       return;
     }
     setKeyNameError(null);
@@ -223,7 +223,7 @@ export default function ConfigPage() {
                   e.target.value.trim() || null,
                 );
                 if (!validationResult.success) {
-                  setKeyNameError(validationResult.error.errors[0].message);
+                  setKeyNameError(validationResult.error.message);
                 } else {
                   setKeyNameError(null);
                 }

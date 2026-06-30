@@ -1,19 +1,8 @@
 'use client';
 
-import { NavItemGroups } from '@/components/custom/nav-itemgroups';
-import { NavMain } from '@/components/custom/nav-main';
-import { NavSecondary } from '@/components/custom/nav-secondary';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from '@/components/ui/sidebar';
-import { api } from '@/convex/_generated/api';
 import { useAuth } from '@clerk/nextjs';
 import { SiGithub } from '@icons-pack/react-simple-icons';
-import { useMutation, useQuery } from 'convex/react';
+import { useQuery } from 'convex/react';
 import {
   Home,
   LogOut,
@@ -27,10 +16,21 @@ import {
 import { useTheme } from 'next-themes';
 import { random, search } from 'node-emoji';
 import type * as React from 'react';
+import { NavItemGroups } from '@/components/custom/nav-itemgroups';
+import { NavMain } from '@/components/custom/nav-main';
+import { NavSecondary } from '@/components/custom/nav-secondary';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
+} from '@/components/ui/sidebar';
+import { api } from '@/convex/_generated/api';
 // import { toast } from 'sonner';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const bookmarks = useQuery(api.bookmarks.getBookmarks) ?? [];
+  const _bookmarks = useQuery(api.bookmarks.getBookmarks) ?? [];
 
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();

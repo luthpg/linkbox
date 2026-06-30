@@ -1,13 +1,13 @@
 'use client';
 
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import type { LucideIcon } from 'lucide-react';
-import Link from 'next/link';
 
 export type mainNavItem = {
   title: string;
@@ -17,11 +17,7 @@ export type mainNavItem = {
   isActive?: boolean;
 };
 
-export function NavMain({
-  items,
-}: {
-  items: mainNavItem[];
-}) {
+export function NavMain({ items }: { items: mainNavItem[] }) {
   const { isMobile, toggleSidebar } = useSidebar();
   return (
     <SidebarMenu>

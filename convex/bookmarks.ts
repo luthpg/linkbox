@@ -1,5 +1,5 @@
-import type { Bookmark } from '@/types/bookmark';
 import { v } from 'convex/values';
+import type { Bookmark } from '@/types/bookmark';
 import { internal } from './_generated/api'; // internal api をインポート
 import type { Id } from './_generated/dataModel';
 import {
