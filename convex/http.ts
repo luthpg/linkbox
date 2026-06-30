@@ -119,9 +119,9 @@ http.route({
       );
     } catch (e) {
       if (e instanceof ZodError) {
-        console.error('バリデーションエラー:', e.errors);
+        console.error('バリデーションエラー:', e.message);
         return new Response(
-          JSON.stringify({ error: 'バリデーションエラー', details: e.errors }),
+          JSON.stringify({ error: 'バリデーションエラー', details: e.message }),
           {
             status: 400,
             headers: new Headers({ 'Content-Type': 'application/json' }),
@@ -233,9 +233,9 @@ http.route({
       );
     } catch (e) {
       if (e instanceof ZodError) {
-        console.error('バリデーションエラー:', e.errors);
+        console.error('バリデーションエラー:', e.message);
         return new Response(
-          JSON.stringify({ error: 'バリデーションエラー', details: e.errors }),
+          JSON.stringify({ error: 'バリデーションエラー', details: e.message }),
           {
             status: 400,
             headers: new Headers({ 'Content-Type': 'application/json' }),

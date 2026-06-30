@@ -85,7 +85,7 @@ export default function ConfigPage() {
       keyNameInput.trim() || null,
     );
     if (!validationResult.success) {
-      setKeyNameError(validationResult.error.errors[0].message);
+      setKeyNameError(validationResult.error.message);
       return;
     }
     setKeyNameError(null);
@@ -223,7 +223,7 @@ export default function ConfigPage() {
                   e.target.value.trim() || null,
                 );
                 if (!validationResult.success) {
-                  setKeyNameError(validationResult.error.errors[0].message);
+                  setKeyNameError(validationResult.error.message);
                 } else {
                   setKeyNameError(null);
                 }
