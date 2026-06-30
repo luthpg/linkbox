@@ -1,3 +1,7 @@
+import type { WebhookEvent } from '@clerk/nextjs/server';
+import { httpRouter } from 'convex/server';
+import { Webhook } from 'svix';
+import { ZodError } from 'zod';
 import { internal } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { httpAction } from '@/convex/_generated/server';
@@ -5,10 +9,6 @@ import { decodeHtmlEntities, sha256 } from '@/convex/lib/utils';
 import { getOgpInfo } from '@/lib/ogp';
 import { type Bookmark, BookmarkFormSchema } from '@/types/bookmark';
 import type { ScraperState } from '@/types/tabelog';
-import type { WebhookEvent } from '@clerk/nextjs/server';
-import { httpRouter } from 'convex/server';
-import { Webhook } from 'svix';
-import { ZodError } from 'zod';
 
 const http = httpRouter();
 
@@ -24,7 +24,7 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         '認証情報が不足しています。Bearerトークンが必要です。',
         {
@@ -50,7 +50,7 @@ http.route({
     let body: { args: BookmarkPayload };
     try {
       body = await request.json();
-    } catch (e) {
+    } catch (_e) {
       return new Response('無効なJSONボディです。', {
         status: 400,
         headers: new Headers({ 'Content-Type': 'text/plain' }),
@@ -142,7 +142,7 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         '認証情報が不足しています。Bearerトークンが必要です。',
         {
@@ -169,7 +169,7 @@ http.route({
 
     try {
       body = await request.json();
-    } catch (e) {
+    } catch (_e) {
       return new Response('無効なJSONボディです。', {
         status: 400,
         headers: new Headers({ 'Content-Type': 'text/plain' }),
@@ -177,7 +177,10 @@ http.route({
     }
 
     try {
-      const bookmarks = await ctx.runQuery(internal.bookmarks.getBookmarksByApi, { userId });
+      const bookmarks = await ctx.runQuery(
+        internal.bookmarks.getBookmarksByApi,
+        { userId },
+      );
       const bookmarkIds = await Promise.all(
         body.data.map(async ({ name, url, area, genre, rate }) => {
           let bookmarkId: string | null;
@@ -253,7 +256,7 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         '認証情報が不足しています。Bearerトークンが必要です。',
         {

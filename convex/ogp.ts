@@ -1,6 +1,6 @@
+import { v } from 'convex/values';
 import { getOgpInfo } from '@/lib/ogp';
 import type { OGPData } from '@/types/ogp';
-import { v } from 'convex/values';
 import { action } from './_generated/server';
 
 export const fetchOgp = action({
@@ -13,7 +13,7 @@ export const fetchOgp = action({
 
     try {
       new URL(decodeURIComponent(url));
-    } catch (e) {
+    } catch (_e) {
       console.error('Invalid URL format:', url);
       throw new Error('Invalid URL format.');
     }

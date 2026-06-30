@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Noto_Sans_JP } from 'next/font/google';
 import '@/app/globals.css';
+import { jaJP } from '@clerk/localizations';
+import { Analytics } from '@vercel/analytics/next';
 import ConvexClientProvider from '@/components/custom/ConvexClientProvider';
 import { ThemeProvider } from '@/components/custom/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { jaJP } from '@clerk/localizations';
-import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansJP = Noto_Sans_JP({ subsets: ['latin'] });

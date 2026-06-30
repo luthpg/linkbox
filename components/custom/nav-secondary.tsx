@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 import type React from 'react';
-
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -10,7 +10,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import Link from 'next/link';
 
 export type SecondaryNavItem = {
   title: string;

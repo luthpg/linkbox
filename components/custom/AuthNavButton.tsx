@@ -1,9 +1,8 @@
 'use client';
 
-import { LoginButton } from '@/components/custom/LoginButton';
 import { UserButton } from '@clerk/nextjs';
 import { useConvexAuth } from 'convex/react';
-import React from 'react';
+import { LoginButton } from '@/components/custom/LoginButton';
 
 export const AuthNavButton = ({ ...props }) => {
   const { isAuthenticated, isLoading } = useConvexAuth();

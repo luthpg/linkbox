@@ -1,6 +1,6 @@
-import type { ApiKey } from '@/types/api-key';
 import { v } from 'convex/values';
 import { customAlphabet } from 'nanoid';
+import type { ApiKey } from '@/types/api-key';
 import { internal } from './_generated/api';
 import type { Id } from './_generated/dataModel';
 import { internalQuery, mutation, query } from './_generated/server';

@@ -1,5 +1,5 @@
-import type { OGPData } from '@/types/ogp';
 import * as cheerio from 'cheerio';
+import type { OGPData } from '@/types/ogp';
 
 const getMetaContent = (
   $: cheerio.CheerioAPI,

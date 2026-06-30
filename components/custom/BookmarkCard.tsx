@@ -1,5 +1,7 @@
 'use client';
 
+import { PencilIcon, Trash2Icon } from 'lucide-react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,8 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Id } from '@/convex/_generated/dataModel';
 import type { Bookmark } from '@/types/bookmark';
 import type { OGPData } from '@/types/ogp';
-import { PencilIcon, Trash2Icon } from 'lucide-react';
-import Link from 'next/link';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;

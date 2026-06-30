@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { SignOutButton, useAuth } from '@clerk/nextjs';
+import { SignOutButton } from '@clerk/nextjs';
 import { useConvexAuth } from 'convex/react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 export default function LogoutButton({ ...props }) {
   const router = useRouter();
